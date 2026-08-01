@@ -1,14 +1,13 @@
 package com.faketime.mixin;
 
-import com.faketime.client.gui.FakeTimeCheckbox;
-import com.faketime.client.gui.FakeTimePanelBackground;
-import com.faketime.client.gui.FakeTimeSyncButton;
-import com.faketime.client.gui.TimeSlider;
-import net.minecraft.client.gui.components.Renderable;
+import com.faketime.client.gui.FakeTimeScreen;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,9 +17,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 
 /**
+ * 暂停界面右上角添加时间调整入口按钮，点击打开 FakeTimeScreen 独立界面。
+ *
  * 注入目标为 Screen 而非 PauseScreen：Mixin AP (0.8.5) 无法通过 PauseScreen
  * 类层级解析继承的 addRenderableWidget 泛型方法映射；以 instanceof PauseScreen
- * 守卫保证只对暂停界面生效。
+ * 守卫保证只对暂停界面生效。只添加单一入口按钮，旧的三列表大面板已整体迁入
+ * FakeTimeScreen，解除了交互失效与遮挡问题。
  */
 @Mixin(Screen.class)
 public abstract class PauseScreenMixin {
@@ -32,33 +34,16 @@ public abstract class PauseScreenMixin {
     private List<NarratableEntry> narratables;
 
     @Inject(method = "init", at = @At("TAIL"))
-    private void faketime_addPanel(CallbackInfo ci) {
+    private void faketime_addEntryButton(CallbackInfo ci) {
         if (!((Object) this instanceof PauseScreen)) return;
 
         Screen screen = (Screen) (Object) this;
-        int panelWidth = 220;
-        int panelHeight = 116;
-        int x = (screen.width - panelWidth) / 2;
-        int y = screen.height - panelHeight - 12;
+        Button entryButton = Button.builder(Component.translatable("gui.faketimemod.open"),
+                b -> Minecraft.getInstance().setScreen(new FakeTimeScreen()))
+                .bounds(screen.width - 80, 5, 75, 20).build();
 
-        FakeTimePanelBackground bg = new FakeTimePanelBackground(x, y, panelWidth, panelHeight);
-        screen.renderables.add(bg);
-        this.children.add(bg);
-        this.narratables.add(bg);
-
-        TimeSlider slider = new TimeSlider(x + 10, y + 46, panelWidth - 20, 20);
-        screen.renderables.add(slider);
-        this.children.add(slider);
-        this.narratables.add(slider);
-
-        FakeTimeCheckbox checkbox = new FakeTimeCheckbox(x + 10, y + 72, 100, 20);
-        screen.renderables.add(checkbox);
-        this.children.add(checkbox);
-        this.narratables.add(checkbox);
-
-        FakeTimeSyncButton syncBtn = new FakeTimeSyncButton(x + 128, y + 72, 82, 20);
-        screen.renderables.add(syncBtn);
-        this.children.add(syncBtn);
-        this.narratables.add(syncBtn);
+        screen.renderables.add(entryButton);
+        this.children.add(entryButton);
+        this.narratables.add(entryButton);
     }
 }

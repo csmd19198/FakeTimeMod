@@ -1,6 +1,8 @@
 {
   "gui.faketimemod.lock": "Lock time",
   "gui.faketimemod.sync": "Sync to server",
+  "gui.faketimemod.open": "Time",
+  "gui.faketimemod.close": "Done",
   "gui.faketimemod.current_time": "Current: %s",
   "gui.faketimemod.server_time": "Server time: %s"
 }
