@@ -550,8 +550,9 @@ git commit -m "feat: add FakeTimeManager state machine and time formatter with t
 **Interfaces:**
 - Consumes: `FakeTimeManager#onTick()`、`#updateRealDayTime(long)`
 - Produces:
-  - `FakeTimeClient` 类 — `@Mod.EventBusSubscriber(modid = FakeTimeMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)`，静态方法 `onClientTick(ClientTickEvent.Post)`；此后 Mixin 与 GUI 都通过它驱动 manager
-  - `LevelMixin` 注入完成：`Level#getDayTime()` 与 `Level#getTimeOfDay(float)` 在客户端返回假时间
+  - `FakeTimeClient` 类 — `@Mod.EventBusSubscriber(modid = FakeTimeMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)`，静态方法 `onClientTick`；此后 Mixin 与 GUI 都通过它驱动 manager
+  - `LevelMixin` 注入完成：`Level#getDayTime()` 在客户端返回假时间（F3/isNight 等）
+  - `LevelTimeAccessMixin` 注入完成：`LevelTimeAccess#dayTime()` 在客户端返回假时间（渲染链唯一根——天空/太阳/月亮/光影/Oculus）
 
 - [ ] **Step 1: 实现 FakeTimeClient（事件驱动）**
 
@@ -582,7 +583,13 @@ public final class FakeTimeClient {
 }
 ```
 
-- [ ] **Step 2: 实现 LevelMixin（渲染假时间注入）**
+- [ ] **Step 2: 实现渲染时间注入（LevelMixin + LevelTimeAccessMixin）**
+
+**1.20.1 渲染时间链（控制器已从官方源码确认，2026-08-01）：** `getTimeOfDay(float)` 定义在**接口** `net.minecraft.world.level.LevelTimeAccess`（default 方法，返回 `dimensionType().timeOfDay(dayTime())`），不在 `Level` 类；`dayTime()` 定义在接口 `net.minecraft.world.level.LevelAccessor`（default 方法，返回 `getLevelData().getDayTime()`）。`getSunAngle`（Level 类）、`getSkyDarken`/`getSkyColor`/`getCloudColor`/`getStarBrightness`（ClientLevel 类）、`getMoonBrightness`/`getMoonPhase`（LevelTimeAccess）全部从这两条接口方法派生——**完全绕过 `Level#getDayTime()`**。
+
+因此需要两个注入点：
+1. `LevelMixin` 注入 `Level#getDayTime()`（覆盖 F3 调试显示、`isNight()` 等 Level 方法调用者）
+2. `LevelTimeAccessMixin` 注入 `LevelTimeAccess#dayTime()`（**渲染时间唯一根**——覆盖天空/太阳/月亮/光影/Oculus）
 
 `src/main/java/com/faketime/mixin/LevelMixin.java`：
 ```java
@@ -590,10 +597,7 @@ package com.faketime.mixin;
 
 import com.faketime.FakeTimeManager;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelData;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -601,28 +605,46 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Level.class)
 public abstract class LevelMixin {
 
-    @Shadow @Final private LevelData levelData;
-
-    /** 仅客户端：getDayTime 返回假时间（渲染/天空/光影统一入口）。 */
+    /** 仅客户端：getDayTime 返回假时间（F3、isNight 等 Level 方法调用者）。 */
     @Inject(method = "getDayTime", at = @At("HEAD"), cancellable = true)
     private void faketime_getDayTime(CallbackInfoReturnable<Long> cir) {
         if (((Level) (Object) this).isClientSide) {
-            cir.setReturnValue(FakeTimeManager.getInstance().getFakeDayTime(this.levelData.getDayTime()));
-        }
-    }
-
-    /** 仅客户端：getTimeOfDay 返回假时间换算（太阳/月亮角度、Oculus 光影）。 */
-    @Inject(method = "getTimeOfDay", at = @At("HEAD"), cancellable = true)
-    private void faketime_getTimeOfDay(float partialTick, CallbackInfoReturnable<Float> cir) {
-        if (((Level) (Object) this).isClientSide) {
-            long fake = FakeTimeManager.getInstance().getFakeDayTime(this.levelData.getDayTime());
-            cir.setReturnValue((fake + partialTick) / 24000.0F);
+            cir.setReturnValue(FakeTimeManager.getInstance().getFakeDayTime(this.getLevelData().getDayTime()));
         }
     }
 }
 ```
 
-注意：`Level#getTimeOfDay(float)` 的注入方法签名必须匹配目标（`(F)FL`，即参数 float、返回 float）。若 `getTimeOfDay` 实际定义在子类（编译报 `injection failed`），改用 `@Mixin(ClientLevel.class)` 并将两个注入移到 `net.minecraft.client.multiplayer.ClientLevel` —— 以运行时控制台报错为准修正（`isClientSide` 判断仍保留，保证 mixin 在服务端也安全）。
+`src/main/java/com/faketime/mixin/LevelTimeAccessMixin.java`：
+```java
+package com.faketime.mixin;
+
+import com.faketime.FakeTimeManager;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelTimeAccess;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+@Mixin(LevelTimeAccess.class)
+public interface LevelTimeAccessMixin {
+
+    /** 渲染时间根：dayTime() 是 getTimeOfDay/getMoonBrightness/getMoonPhase 的唯一时间来源，
+     *  注入它即可让天空/太阳/月亮/光影全部使用假时间。
+     *  真实时间读取（getLevelData().getDayTime()）为 LevelData 接口方法，不受注入影响。 */
+    @Inject(method = "dayTime", at = @At("HEAD"), cancellable = true)
+    default void faketime_dayTime(CallbackInfoReturnable<Long> cir) {
+        LevelTimeAccess self = (LevelTimeAccess) (Object) this;
+        if (self instanceof Level level && level.isClientSide) {
+            long real = self.getLevelData().getDayTime();
+            cir.setReturnValue(FakeTimeManager.getInstance().getFakeDayTime(real));
+        }
+    }
+}
+```
+
+注意：目标为接口时 Mixin 类声明为 `interface`，注入方法必须带 `default` 实现；若编译或运行报错，可改为 abstract class + 抽象注入方法（Mixin 对接口注入两种都支持，以编译为准）。`isClientSide` 判断保证服务端不劫持。
 
 - [ ] **Step 3: 构建 + 回归启动验证**
 
