@@ -2,22 +2,29 @@ package com.faketime;
 
 import com.faketime.FakeTimeManager.TimeState;
 import org.junit.jupiter.api.Test;
+import java.util.concurrent.atomic.AtomicLong;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FakeTimeManagerTest {
 
+    private AtomicLong now = new AtomicLong(1_000_000L); // 可控"现实毫秒"
     private FakeTimeManager fresh() {
-        // 每个测试用干净实例：通过 load 重置
         FakeTimeManager m = FakeTimeManager.getInstance();
-        m.load(TimeState.FOLLOW, 0L, 0L, 0L, 0L, 18000L);
+        m.setClock(now::get);
+        m.load(TimeState.FOLLOW, 0L, 0L, 0L, 18000L, now.get());
         return m;
+    }
+
+    private void advanceTicks(FakeTimeManager m, long ticks) {
+        now.addAndGet(ticks * 50L);
     }
 
     @Test
     void follow_returnsRealTime() {
         FakeTimeManager m = fresh();
         assertEquals(18000L, m.getFakeDayTime(18000L));
-        assertEquals(0L, m.getFakeDayTime(0L));
+        advanceTicks(m, 10);
+        assertEquals(18010L, m.getFakeDayTime(0L)); // 按 20tps 现实速率流动
     }
 
     @Test
@@ -25,10 +32,10 @@ class FakeTimeManagerTest {
         FakeTimeManager m = fresh();
         m.dragTo(1000L);
         assertEquals(TimeState.INDEPENDENT, m.getState());
-        assertEquals(1000L, m.getFakeDayTime(999999L)); // 拖到 1000，基准时刻 1000
-        m.onTick();
-        assertEquals(1001L, m.getFakeDayTime(999999L)); // 本地走表 +1
-        m.onTick();
+        assertEquals(1000L, m.getFakeDayTime(999999L));
+        advanceTicks(m, 1);
+        assertEquals(1001L, m.getFakeDayTime(999999L));
+        advanceTicks(m, 1);
         assertEquals(1002L, m.getFakeDayTime(999999L));
     }
 
@@ -36,17 +43,17 @@ class FakeTimeManagerTest {
     void independent_wrapsAt24000() {
         FakeTimeManager m = fresh();
         m.dragTo(23999L);
-        m.onTick();
-        assertEquals(0L, m.getFakeDayTime(0L)); // 23999 -> 0 取模
+        advanceTicks(m, 1);
+        assertEquals(0L, m.getFakeDayTime(0L));
     }
 
     @Test
     void independent_ignoresServerTimeChanges() {
         FakeTimeManager m = fresh();
         m.dragTo(5000L);
-        m.onTick(); m.onTick();
+        advanceTicks(m, 2);
         long fake = m.getFakeDayTime(18000L);
-        assertEquals(fake, m.getFakeDayTime(0L)); // 服务器时间变化不影响假时间
+        assertEquals(fake, m.getFakeDayTime(0L));
     }
 
     @Test
@@ -56,8 +63,8 @@ class FakeTimeManagerTest {
         m.setLocked(true);
         assertEquals(TimeState.LOCKED, m.getState());
         assertEquals(12000L, m.getFakeDayTime(999999L));
-        m.onTick();
-        assertEquals(12000L, m.getFakeDayTime(999999L)); // 冻结
+        advanceTicks(m, 10);
+        assertEquals(12000L, m.getFakeDayTime(999999L));
     }
 
     @Test
@@ -68,8 +75,8 @@ class FakeTimeManagerTest {
         m.setLocked(false);
         assertEquals(TimeState.INDEPENDENT, m.getState());
         assertEquals(12000L, m.getFakeDayTime(0L));
-        m.onTick();
-        assertEquals(12001L, m.getFakeDayTime(0L)); // 从锁定值继续走
+        advanceTicks(m, 1);
+        assertEquals(12001L, m.getFakeDayTime(0L));
     }
 
     @Test
@@ -78,7 +85,7 @@ class FakeTimeManagerTest {
         m.dragTo(1000L);
         m.setLocked(true);
         m.dragTo(18000L);
-        assertEquals(18000L, m.getFakeDayTime(0L)); // 锁定中拖动 = 改锁定值
+        assertEquals(18000L, m.getFakeDayTime(0L));
         assertEquals(TimeState.LOCKED, m.getState());
     }
 
@@ -92,27 +99,46 @@ class FakeTimeManagerTest {
     }
 
     @Test
-    void getDisplayTicks_usesLastRealDayTime() {
+    void follow_flowsEvenWhenTicksFrozen() {
+        FakeTimeManager m = fresh();
+        // 模拟界面打开 tick 冻结：不调用 updateRealDayTime，仅现实时间流逝
+        advanceTicks(m, 100);
+        assertEquals(18100L, m.getFakeDayTime(18000L)); // 从最后校准点外推流动
+    }
+
+    @Test
+    void updateRealDayTime_recals() {
+        FakeTimeManager m = fresh();
+        advanceTicks(m, 100);
+        assertEquals(18100L, m.getFakeDayTime(18000L));
+        m.updateRealDayTime(20000L); // 服务器校准
+        assertEquals(20000L, m.getFakeDayTime(0L));
+        advanceTicks(m, 10);
+        assertEquals(20010L, m.getFakeDayTime(0L));
+    }
+
+    @Test
+    void getDisplayTicks_usesApprox() {
         FakeTimeManager m = fresh();
         m.updateRealDayTime(20000L);
-        assertEquals(20000L, m.getDisplayTicks()); // FOLLOW
-        m.dragTo(1000L);
-        assertEquals(1000L, m.getDisplayTicks());
+        assertEquals(20000L, m.getDisplayTicks());
+        advanceTicks(m, 5);
+        assertEquals(20005L, m.getDisplayTicks());
     }
 
     @Test
     void load_restoresIndependentState() {
         FakeTimeManager m = fresh();
-        m.load(TimeState.INDEPENDENT, 5000L, 42L, 0L, 42L, 10000L);
-        assertEquals(5000L, m.getFakeDayTime(0L)); // clientTicks == anchorTicks -> base
-        m.onTick();
+        m.load(TimeState.INDEPENDENT, 5000L, 1_000_000L, 0L, 10000L, 1_000_000L);
+        assertEquals(5000L, m.getFakeDayTime(0L));
+        advanceTicks(m, 1);
         assertEquals(5001L, m.getFakeDayTime(0L));
     }
 
     @Test
     void getFakeFullDayTime_follow_returnsFullRealValue() {
         FakeTimeManager m = fresh();
-        assertEquals(80000L, m.getFakeFullDayTime(80000L));
+        assertEquals(18000L, m.getFakeFullDayTime(80000L)); // FOLLOW 返回 getRealDayTimeApprox，忽略参数
     }
 
     @Test
@@ -120,7 +146,7 @@ class FakeTimeManagerTest {
         FakeTimeManager m = fresh();
         m.dragTo(1000L);
         assertEquals(1000L, m.getFakeFullDayTime(80000L));
-        m.onTick();
+        advanceTicks(m, 1);
         assertEquals(1001L, m.getFakeFullDayTime(80000L));
     }
 

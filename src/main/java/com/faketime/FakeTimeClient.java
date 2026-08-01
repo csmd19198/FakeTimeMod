@@ -17,7 +17,6 @@ public final class FakeTimeClient {
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         FakeTimeManager manager = FakeTimeManager.getInstance();
-        manager.onTick();
         Minecraft mc = Minecraft.getInstance();
         if (mc.level != null) {
             // LevelData 不被注入，永远存服务器真实时间
