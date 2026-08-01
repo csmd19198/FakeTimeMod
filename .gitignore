@@ -1,7 +1,8 @@
-run/
-build/
 .gradle/
+build/
 out/
-.superpowers/
-
+*.log
+run/
 bin/
+*.class
+.superpowers/
