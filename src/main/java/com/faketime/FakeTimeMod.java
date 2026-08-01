@@ -7,5 +7,6 @@ public class FakeTimeMod {
     public static final String MODID = "faketimemod";
 
     public FakeTimeMod() {
+        FakeTimeConfig.register();
     }
 }
