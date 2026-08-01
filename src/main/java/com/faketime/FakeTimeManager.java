@@ -30,10 +30,14 @@ public class FakeTimeManager {
         this.lastUpdateMs = clock.getAsLong();
     }
 
-    /** 每 tick 校准（ClientTickEvent）：记录服务器真实时间基准。 */
+    /** 每 tick 校准（ClientTickEvent）：记录服务器真实时间基准。
+     *  仅在真实时间值确实变化时更新校准点——若客户端 levelData 冻结（界面打开/暂停）
+     *  而传入相同值，则保持旧校准点，让 getRealDayTimeApprox 按 20tps 外推继续流动。 */
     public void updateRealDayTime(long realDayTime) {
-        this.lastRealDayTime = realDayTime;
-        this.lastUpdateMs = this.clock.getAsLong();
+        if (realDayTime != this.lastRealDayTime) {
+            this.lastRealDayTime = realDayTime;
+            this.lastUpdateMs = this.clock.getAsLong();
+        }
     }
 
     /** 当前服务器真实时间近似（校准点之间按 20tps 现实速率外推，tick 冻结时依然流动）。 */

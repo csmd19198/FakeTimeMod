@@ -118,6 +118,14 @@ class FakeTimeManagerTest {
     }
 
     @Test
+    void updateRealDayTime_frozenValue_keepsFlowing() {
+        FakeTimeManager m = fresh();
+        m.updateRealDayTime(18000L); // 界面打开时 levelData 冻结，传入相同值
+        advanceTicks(m, 50);
+        assertEquals(18050L, m.getFakeDayTime(18000L)); // 冻结校准不应抹平外推（FOLLOW 继续流动）
+    }
+
+    @Test
     void getDisplayTicks_usesApprox() {
         FakeTimeManager m = fresh();
         m.updateRealDayTime(20000L);
