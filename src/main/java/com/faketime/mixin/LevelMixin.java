@@ -10,11 +10,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Level.class)
 public abstract class LevelMixin {
 
-    /** 仅客户端：getDayTime 返回假时间（渲染/天空/光影统一入口）。 */
+    /** 仅客户端：getDayTime 返回假时间（F3/isNight 等 Level 方法调用者）。 */
     @Inject(method = "getDayTime", at = @At("HEAD"), cancellable = true)
     private void faketime_getDayTime(CallbackInfoReturnable<Long> cir) {
         if (((Level) (Object) this).isClientSide) {
             cir.setReturnValue(FakeTimeManager.getInstance().getFakeDayTime(((Level) (Object) this).getLevelData().getDayTime()));
+        }
+    }
+
+    /** 仅客户端：getSunAngle 返回假时间计算的太阳/月亮角度（Oculus 光影兼容）。
+     *  getSunAngle(F) = getTimeOfDay(F) * 2*PI，其中 getTimeOfDay 走 dayTime() 链，
+     *  但 Mixin 不支持接口方法注入，因此直接在此计算方法内用假时间替换。 */
+    @Inject(method = "getSunAngle", at = @At("HEAD"), cancellable = true)
+    private void faketime_getSunAngle(float partialTick, CallbackInfoReturnable<Float> cir) {
+        if (((Level) (Object) this).isClientSide) {
+            long fake = FakeTimeManager.getInstance().getFakeDayTime(((Level) (Object) this).getLevelData().getDayTime());
+            float timeOfDay = (fake + partialTick) / 24000.0F;
+            cir.setReturnValue(timeOfDay * ((float) Math.PI * 2.0F));
         }
     }
 }
