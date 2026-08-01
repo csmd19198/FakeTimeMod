@@ -2,10 +2,10 @@ package com.faketime;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /** 配置定义与 MOD 总线订阅者：ModConfigEvent 只在 MOD 总线触发（IModBusEvent）。 */
 @Mod.EventBusSubscriber(modid = FakeTimeMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -25,8 +25,9 @@ public final class FakeTimeConfig {
 
     private FakeTimeConfig() {}
 
-    public static void register() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, SPEC);
+    public static void register(FMLJavaModLoadingContext context) {
+        // 1.21.1: ModLoadingContext.get() 已标记 forRemoval，改为构造器注入的上下文（与 Forge 自身用法一致）
+        context.registerConfig(ModConfig.Type.CLIENT, SPEC);
     }
 
     public static void save(FakeTimeManager m) {

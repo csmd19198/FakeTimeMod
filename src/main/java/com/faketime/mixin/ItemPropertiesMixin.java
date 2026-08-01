@@ -15,7 +15,7 @@ public class ItemPropertiesMixin {
      *  原函数读 level.getTimeOfDay()（已被注入为假时间），此处覆盖为读 LevelData 真值。 */
     @Inject(method = "<clinit>", at = @At("TAIL"))
     private static void faketime_overrideClock(CallbackInfo ci) {
-        ItemProperties.register(Items.CLOCK, new ResourceLocation("time"),
+        ItemProperties.register(Items.CLOCK, ResourceLocation.withDefaultNamespace("time"),
                 (stack, level, entity, seed) -> {
                     if (level == null) return 0.0F;
                     long realTicks = level.getLevelData().getDayTime();

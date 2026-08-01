@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -29,7 +30,12 @@ public class FakeTimeScreen extends Screen {
         int y = cy - panelH / 2;
 
         this.addRenderableWidget(new TimeSlider(x + 10, y + 46, panelW - 20, 20));
-        this.addRenderableWidget(new FakeTimeCheckbox(x + 10, y + 72, 100, 20));
+        // 1.21.1: Checkbox 不可被继承（构造器为包私有），改为 builder + onValueChange 回调
+        this.addRenderableWidget(Checkbox.builder(Component.translatable("gui.faketimemod.lock"), this.font)
+                .pos(x + 10, y + 72)
+                .selected(MANAGER.isLocked())
+                .onValueChange((checkbox, selected) -> MANAGER.setLocked(selected))
+                .build());
         this.addRenderableWidget(new FakeTimeSyncButton(x + 128, y + 72, 82, 20));
         this.addRenderableWidget(Button.builder(Component.translatable("gui.faketimemod.close"),
                 b -> this.onClose()).bounds(cx - 40, y + panelH - 30, 80, 20).build());
@@ -37,7 +43,7 @@ public class FakeTimeScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(g);
+        this.renderBackground(g, mouseX, mouseY, partialTick);
         int cx = this.width / 2;
         int cy = this.height / 2;
         int panelW = 220;
