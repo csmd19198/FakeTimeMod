@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 @Mod.EventBusSubscriber(modid = FakeTimeMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class FakeTimeClient {
@@ -34,17 +33,4 @@ public final class FakeTimeClient {
         }
     }
 
-    @SubscribeEvent
-    public static void onConfigLoad(ModConfigEvent.Loading event) {
-        if (event.getConfig().getSpec() == FakeTimeConfig.SPEC) {
-            FakeTimeConfig.load(FakeTimeManager.getInstance());
-        }
-    }
-
-    @SubscribeEvent
-    public static void onConfigReload(ModConfigEvent.Reloading event) {
-        if (event.getConfig().getSpec() == FakeTimeConfig.SPEC) {
-            FakeTimeConfig.load(FakeTimeManager.getInstance());
-        }
-    }
 }

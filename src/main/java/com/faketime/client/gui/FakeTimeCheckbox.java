@@ -8,7 +8,7 @@ public class FakeTimeCheckbox extends Checkbox {
     private static final FakeTimeManager MANAGER = FakeTimeManager.getInstance();
 
     public FakeTimeCheckbox(int x, int y, int width, int height) {
-        super(x, y, width, height, Component.translatable("gui.faketimemod.lock"), MANAGER.isLocked(), false);
+        super(x, y, width, height, Component.translatable("gui.faketimemod.lock"), MANAGER.isLocked(), true);
     }
 
     @Override

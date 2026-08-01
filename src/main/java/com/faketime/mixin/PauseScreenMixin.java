@@ -51,7 +51,7 @@ public abstract class PauseScreenMixin {
         this.children.add(slider);
         this.narratables.add(slider);
 
-        FakeTimeCheckbox checkbox = new FakeTimeCheckbox(x + 10, y + 72, 14, 20);
+        FakeTimeCheckbox checkbox = new FakeTimeCheckbox(x + 10, y + 72, 100, 20);
         screen.renderables.add(checkbox);
         this.children.add(checkbox);
         this.narratables.add(checkbox);

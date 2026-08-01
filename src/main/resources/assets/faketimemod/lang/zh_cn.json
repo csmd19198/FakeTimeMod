@@ -1,4 +1,6 @@
 {
   "gui.faketimemod.lock": "锁定时间",
-  "gui.faketimemod.sync": "同步到服务器"
+  "gui.faketimemod.sync": "同步到服务器",
+  "gui.faketimemod.current_time": "当前: %s",
+  "gui.faketimemod.server_time": "服务器真实时间: %s"
 }

@@ -24,7 +24,7 @@ public class FakeTimeManager {
 
     public long getFakeDayTime(long realDayTime) {
         return switch (this.state) {
-            case FOLLOW -> realDayTime % DAY_LENGTH;
+            case FOLLOW -> Math.floorMod(realDayTime, DAY_LENGTH);
             case INDEPENDENT -> Math.floorMod(this.baseTicks + (this.clientTicks - this.anchorTicks), DAY_LENGTH);
             case LOCKED -> Math.floorMod(this.lockedTicks, DAY_LENGTH);
         };

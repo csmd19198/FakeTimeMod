@@ -44,13 +44,13 @@ public class FakeTimePanelBackground extends AbstractWidget {
                 getX() + 10, getY() + 10, 0, 0, 32, 32, 32, 32);
 
         // Current time (fake time)
-        g.drawString(font, Component.literal(
-                "当前: " + FakeTimeFormatter.formatTicks(fake) + "  (" + FakeTimeFormatter.formatClock(fake) + ")"),
+        g.drawString(font, Component.translatable("gui.faketimemod.current_time",
+                FakeTimeFormatter.formatTicks(fake) + "  (" + FakeTimeFormatter.formatClock(fake) + ")"),
                 getX() + 50, getY() + 12, 0xFFFFFF);
 
         // Server real time
-        g.drawString(font, Component.literal(
-                "服务器真实时间: " + FakeTimeFormatter.formatTicks(real) + "  (" + FakeTimeFormatter.formatClock(real) + ")"),
+        g.drawString(font, Component.translatable("gui.faketimemod.server_time",
+                FakeTimeFormatter.formatTicks(real) + "  (" + FakeTimeFormatter.formatClock(real) + ")"),
                 getX() + 50, getY() + 24, 0x808080);
     }
 
