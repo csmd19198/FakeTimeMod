@@ -6,7 +6,8 @@
   "client": [
     "LevelMixin",
     "ClientLevelMixin",
-    "LevelRendererMixin"
+    "LevelRendererMixin",
+    "ItemPropertiesMixin"
   ],
   "injectors": {
     "defaultRequire": 1
