@@ -30,6 +30,15 @@ public class FakeTimeManager {
         };
     }
 
+    /** 完整假时间（含天数，不取模）——用于月相等需要"第几天"的计算。 */
+    public long getFakeFullDayTime(long realDayTime) {
+        return switch (this.state) {
+            case FOLLOW -> realDayTime;
+            case INDEPENDENT -> this.baseTicks + (this.clientTicks - this.anchorTicks);
+            case LOCKED -> this.lockedTicks;
+        };
+    }
+
     public long getDisplayTicks() { return this.getFakeDayTime(this.lastRealDayTime); }
 
     public void dragTo(long ticks) {

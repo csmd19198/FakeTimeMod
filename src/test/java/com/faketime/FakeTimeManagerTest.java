@@ -108,4 +108,27 @@ class FakeTimeManagerTest {
         m.onTick();
         assertEquals(5001L, m.getFakeDayTime(0L));
     }
+
+    @Test
+    void getFakeFullDayTime_follow_returnsFullRealValue() {
+        FakeTimeManager m = fresh();
+        assertEquals(80000L, m.getFakeFullDayTime(80000L));
+    }
+
+    @Test
+    void getFakeFullDayTime_independent_returnsBasePlusElapsed() {
+        FakeTimeManager m = fresh();
+        m.dragTo(1000L);
+        assertEquals(1000L, m.getFakeFullDayTime(80000L));
+        m.onTick();
+        assertEquals(1001L, m.getFakeFullDayTime(80000L));
+    }
+
+    @Test
+    void getFakeFullDayTime_locked_returnsLockedValue() {
+        FakeTimeManager m = fresh();
+        m.dragTo(1000L);
+        m.setLocked(true);
+        assertEquals(1000L, m.getFakeFullDayTime(80000L));
+    }
 }

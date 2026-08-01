@@ -14,7 +14,6 @@ public abstract class ClientLevelMixin {
     @Redirect(method = {"getSkyDarken", "getSkyColor", "getCloudColor", "getStarBrightness"},
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getTimeOfDay(F)F"))
     private float faketime_getTimeOfDay(ClientLevel self, float partialTick) {
-        if (!self.isClientSide) return (float) (self.getLevelData().getDayTime() % 24000L) / 24000.0F;
         long fake = FakeTimeManager.getInstance().getFakeDayTime(self.getLevelData().getDayTime());
         return (float) (fake % 24000L) / 24000.0F;
     }

@@ -21,7 +21,7 @@ public abstract class LevelRendererMixin {
     @Redirect(method = "renderSky",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getMoonPhase()I"))
     private int faketime_sky_getMoonPhase(ClientLevel self) {
-        long fake = FakeTimeManager.getInstance().getFakeDayTime(self.getLevelData().getDayTime());
-        return (int) (fake / 24000L % 8L + 8L) % 8;
+        long fakeFull = FakeTimeManager.getInstance().getFakeFullDayTime(self.getLevelData().getDayTime());
+        return (int) (fakeFull / 24000L % 8L + 8L) % 8;
     }
 }
