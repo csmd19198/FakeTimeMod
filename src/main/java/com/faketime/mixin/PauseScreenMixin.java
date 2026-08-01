@@ -17,6 +17,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
+/**
+ * 注入目标为 Screen 而非 PauseScreen：Mixin AP (0.8.5) 无法通过 PauseScreen
+ * 类层级解析继承的 addRenderableWidget 泛型方法映射；以 instanceof PauseScreen
+ * 守卫保证只对暂停界面生效。
+ */
 @Mixin(Screen.class)
 public abstract class PauseScreenMixin {
 

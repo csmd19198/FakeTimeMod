@@ -12,6 +12,13 @@ import net.minecraft.resources.ResourceLocation;
 
 public class FakeTimePanelBackground extends AbstractWidget {
 
+    private static final ResourceLocation[] CLOCK_FRAMES = new ResourceLocation[64];
+    static {
+        for (int i = 0; i < 64; i++) {
+            CLOCK_FRAMES[i] = new ResourceLocation(String.format("textures/item/clock_%02d.png", i));
+        }
+    }
+
     private final FakeTimeManager manager;
 
     public FakeTimePanelBackground(int x, int y, int width, int height) {
@@ -33,7 +40,7 @@ public class FakeTimePanelBackground extends AbstractWidget {
         // Clock: MC 64-frame animated texture, select frame by fake time
         // frame 0 = 6:00 AM, frame 32 = 6:00 PM
         int frame = (int) (fake / (float) FakeTimeManager.DAY_LENGTH * 64.0F) % 64;
-        g.blit(new ResourceLocation(String.format("textures/item/clock_%02d.png", frame)),
+        g.blit(CLOCK_FRAMES[frame],
                 getX() + 10, getY() + 10, 0, 0, 32, 32, 32, 32);
 
         // Current time (fake time)
