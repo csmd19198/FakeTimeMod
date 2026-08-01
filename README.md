@@ -86,4 +86,4 @@ cd FakeTimeMod
 
 ## 许可
 
-All rights reserved.
+MIT
