@@ -52,7 +52,7 @@ public class FakeTimeScreen extends Screen {
         g.fill(x + 1, y + 1, x + panelW - 1, y + panelH - 1, 0xC0282828);
 
         long fake = MANAGER.getDisplayTicks();
-        long real = MANAGER.getLastRealDayTime();
+        long real = MANAGER.getRealDayTimeApprox(); // 外推近似：界面打开时也随现实时间流动
 
         int frame = (int) (fake / (float) FakeTimeManager.DAY_LENGTH * 64.0F) % 64;
         g.blit(CLOCK_FRAMES[frame], x + 10, y + 10, 0, 0, 32, 32, 32, 32);
