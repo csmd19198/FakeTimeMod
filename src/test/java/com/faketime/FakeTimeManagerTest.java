@@ -99,6 +99,19 @@ class FakeTimeManagerTest {
     }
 
     @Test
+    void syncWhileLocked_snapsToServerTimeAndStaysLocked() {
+        FakeTimeManager m = fresh();
+        m.dragTo(1000L);
+        m.setLocked(true);
+        advanceTicks(m, 100); // 服务器时间走到 18100
+        m.syncToServer();
+        assertEquals(TimeState.LOCKED, m.getState()); // 保持锁定
+        assertEquals(18100L, m.getFakeDayTime(0L));   // 冻结在服务器当前时刻
+        advanceTicks(m, 10);
+        assertEquals(18100L, m.getFakeDayTime(0L));   // 不再流逝
+    }
+
+    @Test
     void follow_flowsEvenWhenTicksFrozen() {
         FakeTimeManager m = fresh();
         // 模拟界面打开 tick 冻结：不调用 updateRealDayTime，仅现实时间流逝

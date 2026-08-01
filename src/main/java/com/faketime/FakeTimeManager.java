@@ -85,7 +85,15 @@ public class FakeTimeManager {
         }
     }
 
-    public void syncToServer() { this.state = TimeState.FOLLOW; }
+    /** 同步到服务器：未锁定时恢复跟随（FOLLOW，时间流动）；
+     *  已锁定时将锁定值跳到服务器当前时刻并保持锁定（冻结在服务器时间）。 */
+    public void syncToServer() {
+        if (this.state == TimeState.LOCKED) {
+            this.lockedTicks = Math.floorMod(this.getRealDayTimeApprox(), DAY_LENGTH);
+        } else {
+            this.state = TimeState.FOLLOW;
+        }
+    }
 
     public TimeState getState() { return this.state; }
     public boolean isLocked() { return this.state == TimeState.LOCKED; }
