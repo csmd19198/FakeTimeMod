@@ -33,7 +33,7 @@ public abstract class PauseScreenMixin {
     @Shadow
     private List<NarratableEntry> narratables;
 
-    @Inject(method = "init", at = @At("TAIL"))
+    @Inject(method = "init(Lnet/minecraft/client/Minecraft;II)V", at = @At("TAIL"))
     private void faketime_addEntryButton(CallbackInfo ci) {
         if (!((Object) this instanceof PauseScreen)) return;
 
