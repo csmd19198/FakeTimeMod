@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(FogRenderer.class)
 public abstract class FogRendererMixin {
 
-    @Redirect(method = {"setupColor", "lambda$setupColor$0"},
+    @Redirect(method = "setupColor",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getTimeOfDay(F)F"))
     private static float faketime_getTimeOfDay(ClientLevel level, float partialTick) {
         long fake = FakeTimeManager.getInstance().getFakeDayTime(level.getLevelData().getDayTime());
