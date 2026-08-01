@@ -30,13 +30,18 @@ public final class FakeTimeConfig {
     }
 
     public static void save(FakeTimeManager m) {
-        STATE.set(m.getState());
-        BASE_TICKS.set(m.getBaseTicks());
-        ANCHOR_MS.set(m.getAnchorMs());
-        LOCKED_TICKS.set(m.getLockedTicks());
-        LAST_REAL_DAY_TIME.set(m.getLastRealDayTime());
-        LAST_UPDATE_MS.set(m.getLastUpdateMs());
-        SPEC.save();
+        try {
+            STATE.set(m.getState());
+            BASE_TICKS.set(m.getBaseTicks());
+            ANCHOR_MS.set(m.getAnchorMs());
+            LOCKED_TICKS.set(m.getLockedTicks());
+            LAST_REAL_DAY_TIME.set(m.getLastRealDayTime());
+            LAST_UPDATE_MS.set(m.getLastUpdateMs());
+            // ConfigValue.set 内部已触发 autosave 写盘；SPEC.save() 冗余且增加写盘次数，不再调用
+        } catch (Exception e) {
+            // 配置写盘失败（瞬时 I/O 问题）不应崩溃游戏，仅记录警告；下次变化时重试
+            FakeTimeMod.LOGGER.warn("Failed to save faketimemod config: {}", e.toString());
+        }
     }
 
     public static void load(FakeTimeManager m) {
