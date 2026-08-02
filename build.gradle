@@ -1,8 +1,6 @@
 plugins {
-    id 'eclipse'
-    id 'idea'
-    id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
-    id 'org.spongepowered.mixin' version '0.7.+'
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.141'
 }
 
 version = property('mod_version')
@@ -11,37 +9,32 @@ base { archivesName = property('mod_id') }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-repositories { mavenCentral() }
+repositories {
+    mavenCentral()
+}
 
-minecraft {
-    mappings channel: property('mapping_channel'), version: property('mapping_version')
+neoForge {
+    version = property('neo_version')
     runs {
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            systemProperty 'forge.logging.console.level', 'debug'
+        }
         client {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            mods { faketimemod { source sourceSets.main } }
+            client()
         }
         server {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            mods { faketimemod { source sourceSets.main } }
+            server()
+        }
+    }
+    mods {
+        faketimemod {
+            sourceSet sourceSets.main
         }
     }
 }
 
-mixin {
-    add sourceSets.main, 'faketimemod.refmap.json'
-    config 'faketimemod.mixins.json'
-}
-
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.7:processor'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -54,16 +47,33 @@ tasks.withType(JavaCompile).configureEach {
 test { useJUnitPlatform() }
 
 processResources {
-    // Dev runs (Forge 52 modular loader): FML's ClasspathLocator builds the mod file from the
-    // classpath entry that contains META-INF/mods.toml, and the mod's resource pack (lang etc.)
-    // is loaded from that same entry. So mods.toml + assets + pack.mcmeta must live in the
-    // classes output (see copyResourcesToClasses) to make build/classes/java/main a
+    // Dev runs (NeoForge 21.1 modular loader): FML's ClasspathLocator builds the mod file from the
+    // classpath entry that contains META-INF/neoforge.mods.toml, and the mod's resource pack (lang
+    // etc.) is loaded from that same entry. So neoforge.mods.toml + assets + pack.mcmeta must live
+    // in the classes output (see copyResourcesToClasses) to make build/classes/java/main a
     // self-contained mod file. Keep them out of the loose resources output to avoid
     // duplicate entries in the packaged jar. faketimemod.mixins.json stays in resources
     // (loaded from the classpath via the --mixin.config launch arg).
-    exclude 'META-INF/mods.toml'
+    exclude 'META-INF/neoforge.mods.toml'
     exclude 'assets/**'
     exclude 'pack.mcmeta'
+    var replaceProperties = [
+            minecraft_version: project.property('minecraft_version'),
+            minecraft_version_range: project.property('minecraft_version_range'),
+            neo_version: project.property('neo_version'),
+            neo_version_range: project.property('neo_version_range'),
+            loader_version_range: project.property('loader_version_range'),
+            mod_id: project.property('mod_id'),
+            mod_name: project.property('mod_name'),
+            mod_license: project.property('mod_license'),
+            mod_version: project.property('mod_version'),
+            mod_authors: project.property('mod_authors'),
+            mod_description: project.property('mod_description'),
+    ]
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties
+    }
 }
 
 tasks.register('copyResourcesToClasses') {
@@ -77,8 +87,8 @@ tasks.register('copyResourcesToClasses') {
             from 'src/main/resources'
             into outDir
             exclude 'faketimemod.mixins.json'
-            // 只对 mods.toml 做变量展开，其余资源（lang、二进制纹理等）原样复制
-            filesMatching('META-INF/mods.toml') {
+            // 只对 neoforge.mods.toml 做变量展开，其余资源（lang、二进制纹理等）原样复制
+            filesMatching('META-INF/neoforge.mods.toml') {
                 expand project.properties
             }
         }
@@ -98,6 +108,6 @@ tasks.register('copyResourcesToClasses') {
 // The packaged jar also needs them, now living in the classes output (not the loose resources).
 // compileTestJava 也消费 build/classes/java/main（测试类路径含主输出），需显式声明依赖，
 // 否则 Gradle 校验报隐式依赖问题。
-tasks.matching { it.name in ['prepareRunClient', 'prepareRunServer', 'jar', 'compileTestJava'] }.configureEach {
+tasks.matching { it.name in ['prepareRunClient', 'prepareRunServer', 'runClient', 'runServer', 'jar', 'compileTestJava'] }.configureEach {
     dependsOn 'copyResourcesToClasses'
 }
