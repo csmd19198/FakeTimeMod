@@ -1,74 +1,74 @@
 # FakeTimeMod
 
-客户端假时间模组 —— 在 ESC 暂停界面提供时间滑块，允许本地调整世界时间显示，不影响服务器逻辑。
+A client-side fake time mod — adds a time slider to the ESC pause menu so you can adjust the world time display locally, without affecting server logic.
 
-## 用途
+## Use Cases
 
-- **截图/摄影**：自由拖动时间条，获取理想的天空颜色和光照角度。
-- **光影调试**：配合 Oculus 等光影模组，实时观察不同时间下的光影效果。
-- **建筑预览**：在特定光照条件下检查建筑的视觉效果，无需等待游戏内时间自然流逝。
-- **独立时间**：不想跟着服务器日夜循环走？拖动滑块进入独立模式，或锁定到某一时刻。
+- **Screenshots / Photography**: freely drag the time bar to get the ideal sky color and lighting angle.
+- **Shader Debugging**: observe shader effects at different times in real time, with shader mods such as Iris.
+- **Building Previews**: check how a build looks under specific lighting without waiting for the in-game time to pass naturally.
+- **Independent Time**: don't want to follow the server's day/night cycle? Drag the slider into independent mode, or lock to a specific moment.
 
-## 安装
+## Installation
 
-1. 安装 Minecraft **1.21.1** 和 **NeoForge 21.1.x**（注：与 Forge 版互不兼容，请按加载器选用对应 jar）。
-2. 将 `faketimemod-1.0.0-1.21.1-neoforge.jar` 放入游戏目录的 `mods` 文件夹。
-3. 启动游戏。
+1. Install Minecraft **1.21.1** and **NeoForge 21.1.x** (note: incompatible with the Forge build — pick the jar that matches your loader).
+2. Place `faketimemod-1.0.0-1.21.1-neoforge.jar` in the `mods` folder of your game directory.
+3. Launch the game.
 
-本模组为**纯客户端**模组，无需在服务端安装。
+This is a **client-only** mod — no server-side installation needed.
 
-## 使用方法
+## Usage
 
-在游戏中按 **ESC** 打开暂停菜单，点击右上角的 **「时间」** 按钮打开 FakeTimeMod 调整面板。面板包含以下控件：
+Press **ESC** in-game to open the pause menu, then click the **「Time」** button in the top-right corner to open the FakeTimeMod panel. The panel contains:
 
-| 控件 | 说明 |
-|------|------|
-| **时间滑块** | 水平滑动条，左端 = 6:00（0 刻），右端 = 5:59（23999 刻）。拖动滑块即可立即改变世界时间显示。拖动后自动进入 **独立模式**。 |
-| **锁定复选框** | 勾选后将当前时间**冻结**，太阳/天空不再移动。取消勾选恢复独立模式。 |
-| **同步按钮** | 点击后**恢复到服务器时间**（跟随模式），放弃所有本地时间调整。 |
+| Control | Description |
+|---------|-------------|
+| **Time slider** | Horizontal slider, left end = 6:00 (0 ticks), right end = 5:59 (23999 ticks). Dragging instantly changes the world time display and automatically enters **independent mode**. |
+| **Lock checkbox** | Check to **freeze** the current time — the sun/sky stops moving. Uncheck to return to independent mode. |
+| **Sync button** | Click to **restore server time** (follow mode), discarding all local time adjustments. |
 
-### 三种时间状态
+### The Three Time States
 
-| 状态 | 说明 |
-|------|------|
-| **FOLLOW（跟随）** | 默认状态，时间完全跟随服务器。 |
-| **INDEPENDENT（独立）** | 从拖动滑块的那一刻起，假时间以客户端本地节奏自行推进（每 tick +1）。与服务器脱钩，但时间仍在流动。 |
-| **LOCKED（锁定）** | 时间冻结在指定时刻，不会推进。适合截图场景。 |
+| State | Description |
+|-------|-------------|
+| **FOLLOW** | Default state. Time fully follows the server. |
+| **INDEPENDENT** | From the moment you drag the slider, fake time advances at the client's own pace (+1 per tick), decoupled from the server but still flowing. |
+| **LOCKED** | Time frozen at a fixed moment, never advances. Great for screenshots. |
 
-### 配置持久化
+### Config Persistence
 
-时间状态和滑块位置会在退出世界/关闭游戏时自动保存到客户端配置文件（`faketimemod-client.toml`），下次启动自动恢复。
+The time state and slider position are saved automatically to the client config file (`faketimemod-client.toml`) when you leave a world or close the game, and restored on the next launch.
 
-## 时间换算表
+## Time Conversion Table
 
-Minecraft 一天 = 24000 游戏刻（ticks），1000 刻 = 1 游戏小时（游戏时钟换算用；按现实时间计约 50 秒）。0 刻为日出（6:00），昼夜按 24 小时制显示：0-12000 刻为白天，12000-24000 刻为黑夜。
+One Minecraft day = 24000 game ticks; 1000 ticks = 1 game hour (for the clock conversion; about 50 real seconds). 0 ticks is sunrise (6:00), and the display uses a 24-hour clock: ticks 0-12000 are daytime, ticks 12000-24000 are night.
 
-| 游戏刻 | 现实时间 | 说明 |
-|--------|----------|------|
-| 0 | 6:00 | 日出（默认一天开始） |
-| 6000 | 12:00 | 正午，太阳最高 |
-| 12000 | 18:00 | 日落 |
-| 18000 | 0:00 | 午夜 |
-| 24000 | 6:00 | 次日日出（等同于 0 刻） |
+| Ticks | Time | Description |
+|-------|------|-------------|
+| 0 | 6:00 | Sunrise (default start of day) |
+| 6000 | 12:00 | Noon, sun at its highest |
+| 12000 | 18:00 | Sunset |
+| 18000 | 0:00 | Midnight |
+| 24000 | 6:00 | Next sunrise (same as 0 ticks) |
 
-## 已知行为
+## Known Behavior
 
-以下行为是本模组的设计选择，属于正常表现：
+The following are intentional design choices of this mod:
 
-- **刷怪和睡觉**：怪物生成和玩家睡觉的判定**始终基于服务器真实时间**。即使你在客户端把时间拖到白天，服务器是夜晚则怪物照常生成，床也按服务器时间判定能否入睡（局域网服可验证这一点）。
-- **钟表物品**：原版钟表物品的指针**始终显示服务器真实时间**，不受假时间影响。这是因为钟表物品的渲染走 `ItemProperties` 而非 `Level#getDayTime()`。
-- **Oculus 兼容**：Oculus 光影仅调用 `Level#getDayTime()` / `Level#getTimeOfDay()` 获取时间，本模组通过 Mixin 注入这两个方法，因此光影中的太阳位置、天空颜色、环境光照均随假时间变化。
-- **Create 布谷鸟钟**：Create 模组的布谷鸟钟通过 `ClientLevel#getDayTime()` 获取时间，本模组已注入该方法，布谷鸟钟指针将受假时间影响——但这符合本模组的预期（让所有客户端渲染的时间统一）。如需布谷鸟钟始终显示真实时间，属于功能需求而非 bug。
-- **服务器 `/time set` 命令**：服务器执行 `/time set` 不会影响客户端已设定的假时间（即假时间不会随服务器变更而自动同步，除非手动点同步按钮）。
+- **Mob spawning and sleeping**: mob spawning and player sleeping are **always based on the server's real time**. Even if you drag the client time to day while the server is at night, mobs will still spawn and beds will judge sleepability by server time (verifiable on a LAN world).
+- **Clock item**: the vanilla clock item's hands **always show the server's real time**, unaffected by fake time. This is because the clock renders via `ItemProperties` rather than `Level#getDayTime()`.
+- **Iris compatibility**: Iris only calls `Level#getDayTime()` / `Level#getTimeOfDay()` to read the time; this mod injects both methods via Mixin, so the sun position, sky color, and ambient lighting in shaders all follow the fake time.
+- **Create's cuckoo clock**: Create's cuckoo clock reads the time via `ClientLevel#getDayTime()`, which this mod also injects, so its hands follow the fake time — which matches the mod's intent (unifying all client-rendered time). If you want the cuckoo clock to always show real time, that's a feature request, not a bug.
+- **Server `/time set` command**: a server-side `/time set` does not affect an already-adjusted fake time (fake time won't auto-sync to server changes unless you click the sync button manually).
 
-## 已知局限
+## Known Limitations
 
-- **Oculus 光影的 moonBrightness / moonPhase**：光影包通常通过 `Level#getDayTime()` 之外的方式获取月相（如 `Level#getMoonPhase()`），本模组不注入这些路径，因此光影中的月光亮度（moonBrightness）和月相（moonPhase）**仍按服务器真实时间计算**。
-- **LOCKED 模式下的月相**：当时间被锁定时，`getFakeFullDayTime()` 返回固定的时刻值，导致月相始终为该固定时刻对应的月相。若要月相也跟随假时间变化，请使用 INDEPENDENT 模式而非 LOCKED 模式。
+- **moonBrightness / moonPhase in shaders**: shader packs usually obtain the moon phase through paths other than `Level#getDayTime()` (e.g. `Level#getMoonPhase()`); this mod does not inject those paths, so moonlight brightness (moonBrightness) and moon phase (moonPhase) in shaders are **still computed from the server's real time**.
+- **Moon phase in LOCKED mode**: when time is locked, `getFakeFullDayTime()` returns a fixed value, so the moon phase stays at the phase of that fixed moment. To have the moon phase follow fake time, use INDEPENDENT mode instead of LOCKED mode.
 
-## 构建
+## Building
 
-前置条件：JDK 21、Gradle（使用项目自带的 Gradle Wrapper）。
+Prerequisites: JDK 21, Gradle (use the bundled Gradle Wrapper).
 
 ```bash
 git clone <repo-url>
@@ -76,14 +76,14 @@ cd FakeTimeMod
 ./gradlew build
 ```
 
-构建产物位于 `build/libs/faketimemod-1.0.0-1.21.1-neoforge.jar`。
+The build artifact is at `build/libs/faketimemod-1.0.0-1.21.1-neoforge.jar`.
 
-运行开发环境客户端：
+Run the dev environment client:
 
 ```bash
 ./gradlew runClient
 ```
 
-## 许可
+## License
 
 MIT
