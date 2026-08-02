@@ -25,12 +25,14 @@ public abstract class ClientLevelMixin {
     /** 自定义昼夜暗度曲线：解决假时间晚上时地面太亮的问题。
      *  原版 getSkyDarken 只取决于 skyAngle（时间），但方块亮度 = skyLight(0-15) × darken，
      *  假晚上时 skyLight 仍是白天服务端值（如 15），导致 15×0.36 >> 4×0.36（真实晚上）。
-     *  新曲线：夜间暗度固定 0.2，白天 0.2~1.0 平滑过渡，消除 skyLight 差异带来的亮度差。 */
+     *  新曲线：夜间暗度固定 0.2，白天 0.2~1.0 平滑过渡，消除 skyLight 差异带来的亮度差。
+     *  曲线整体 +1000 刻（fake + 1000）校准相位：实测早晨 7:00 地面应已较亮，原曲线
+     *  在 0~2000 刻仍处暗端，与 vanilla 实际光照不符。 */
     @Inject(method = "getSkyDarken", at = @At("HEAD"), cancellable = true)
     private void faketime_getSkyDarken(float partialTick, CallbackInfoReturnable<Float> cir) {
         ClientLevel self = (ClientLevel) (Object) this;
         long fake = FakeTimeManager.getInstance().getFakeDayTime(self.getLevelData().getDayTime());
-        float t = (float) (fake % 24000L) / 24000.0F;              // 0=6AM, 0.25=正午, 0.5=18:00, 0.75=午夜
+        float t = (float) Math.floorMod(fake + 1000L, 24000L) / 24000.0F;  // 0=6AM, 0.25=正午, 0.5=18:00, 0.75=午夜
         float sun = (float) Math.cos((t - 0.25F) * 2.0F * (float) Math.PI);  // 正午=1, 午夜=-1
         float darken = 0.2F + 0.8F * Math.max(0.0F, sun);          // 白天 0.2~1.0, 夜间 0.2
         darken *= 1.0F - self.getRainLevel(partialTick) * 5.0F / 16.0F;
