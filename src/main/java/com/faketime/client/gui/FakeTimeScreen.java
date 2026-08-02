@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -64,8 +65,10 @@ public class FakeTimeScreen extends Screen {
         int x = cx - panelW / 2;
         int y = cy - panelH / 2;
 
-        g.fill(x, y, x + panelW, y + panelH, 0xC0202020);
-        g.fill(x + 1, y + 1, x + panelW - 1, y + panelH - 1, 0xC0282828);
+        // 1.21 的 renderBackground 会对半透明背景做模糊；面板若半透明，虚化背景会透出，
+        // 使钟表/文字所在的非按钮区域显得模糊。改为不透明背景。
+        g.fill(x, y, x + panelW, y + panelH, 0xFF202020);
+        g.fill(x + 1, y + 1, x + panelW - 1, y + panelH - 1, 0xFF282828);
 
         long fake = MANAGER.getDisplayTicks();
         long real = MANAGER.getRealDayTimeApprox(); // 外推近似：界面打开时也随现实时间流动
@@ -79,7 +82,13 @@ public class FakeTimeScreen extends Screen {
                 FakeTimeFormatter.formatTicks(real) + "  (" + FakeTimeFormatter.formatClock(real) + ")"),
                 x + 50, y + 24, 0x808080);
 
-        super.render(g, mouseX, mouseY, partialTick);
+        // 1.21.1 的原版 Screen.render 自身会调用 renderBackground（含 processBlurEffect 模糊 pass）。
+        // 若走 super.render，第二次模糊会把上方已画好的面板/钟表/文字再次模糊（按钮因在模糊
+        // 之后绘制而保持清晰——正是实测所见）。故手动遍历 renderables，与原版 render 的
+        // 组件循环等价，避免二次模糊。
+        for (Renderable renderable : this.renderables) {
+            renderable.render(g, mouseX, mouseY, partialTick);
+        }
     }
 
     /** 简约钟表：12 个刻度点 + 一根时针。fakeTicks 按 1000 刻 = 1 小时换算（0 刻 = 6:00）。 */
