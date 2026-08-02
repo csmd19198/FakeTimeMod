@@ -13,10 +13,11 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(FogRenderer.class)
 public abstract class FogRendererMixin {
 
+    // 复刻 vanilla getTimeOfDay 的 -6000 刻偏移（skyTicks），保持雾与昼夜一致。
     @Redirect(method = {"setupColor", "lambda$setupColor$0"},
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getTimeOfDay(F)F"))
     private static float faketime_getTimeOfDay(ClientLevel level, float partialTick) {
         long fake = FakeTimeManager.getInstance().getFakeDayTime(level.getLevelData().getDayTime());
-        return (float) (fake % 24000L) / 24000.0F;
+        return FakeTimeManager.skyTicks(fake) / 24000.0F;
     }
 }

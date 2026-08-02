@@ -24,6 +24,13 @@ public class FakeTimeManager {
 
     public static FakeTimeManager getInstance() { return INSTANCE; }
 
+    /** vanilla DimensionType.timeOfDay = frac(dayTime/24000 - 0.25) 的 -6000 刻偏移。
+     *  天空/太阳/雾等渲染（getTimeOfDay/getSunAngle）都基于偏移后的时刻：6:00(0刻) 天亮、
+     *  正午(6000刻) 最亮、18:00(12000刻) 天黑、午夜(18000刻) 最暗。 */
+    public static long skyTicks(long dayTicks) {
+        return Math.floorMod(dayTicks - 6000L, DAY_LENGTH);
+    }
+
     /** 测试用：注入可控时钟。 */
     public void setClock(LongSupplier clock) {
         this.clock = clock;

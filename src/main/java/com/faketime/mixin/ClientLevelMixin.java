@@ -12,12 +12,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ClientLevelMixin {
 
     /** getSkyColor/getCloudColor/getStarBrightness 内部对 getTimeOfDay 的调用点重定向为假时间。
-     *  原 LevelTimeAccess.getTimeOfDay 实现忽略 partialTick 返回 (dayTime%24000)/24000。 */
+     *  原 LevelTimeAccess.getTimeOfDay = frac(dayTime/24000 - 0.25)（忽略 partialTick），
+     *  必须复刻其 -6000 刻偏移（skyTicks），否则天空昼夜比 vanilla 超前 6000 刻
+     *  （表现为滑块 0-6000 与 18000-24000 是白天、6000-18000 是黑夜）。 */
     @Redirect(method = {"getSkyColor", "getCloudColor", "getStarBrightness"},
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getTimeOfDay(F)F"))
     private float faketime_getTimeOfDay(ClientLevel self, float partialTick) {
         long fake = FakeTimeManager.getInstance().getFakeDayTime(self.getLevelData().getDayTime());
-        return (float) (fake % 24000L) / 24000.0F;
+        return FakeTimeManager.skyTicks(fake) / 24000.0F;
     }
 
     /** 自定义昼夜暗度曲线：解决假时间晚上时地面太亮的问题。
