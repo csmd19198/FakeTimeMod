@@ -12,6 +12,7 @@ public final class FakeTimeClient {
     private static FakeTimeManager.TimeState lastSavedState = null;
     private static long lastSavedTicks = Long.MIN_VALUE;
     private static long lastSavedBase = Long.MIN_VALUE;
+    private static int debugCounter = 0; // TEMP DEBUG: 局域网双账号对比测试用，定位后移除
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
@@ -20,7 +21,14 @@ public final class FakeTimeClient {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level != null) {
             // LevelData 不被注入，永远存服务器真实时间
-            manager.updateRealDayTime(mc.level.getLevelData().getDayTime());
+            long worldDayTime = mc.level.getLevelData().getDayTime();
+            manager.updateRealDayTime(worldDayTime);
+            // TEMP DEBUG: 每 200 tick(约10s) 打印 世界时间 vs 假时间 的跟踪情况
+            if (++debugCounter % 200 == 0) {
+                FakeTimeMod.LOGGER.info("[FakeTimeDBG] world={} fake={} approx={} lastReal={} lastUpdateMs={} now={}",
+                        worldDayTime, manager.getFakeDayTime(worldDayTime), manager.getRealDayTimeApprox(),
+                        manager.getLastRealDayTime(), manager.getLastUpdateMs(), System.currentTimeMillis());
+            }
         }
         if (manager.getState() != lastSavedState
                 || manager.getLockedTicks() != lastSavedTicks
