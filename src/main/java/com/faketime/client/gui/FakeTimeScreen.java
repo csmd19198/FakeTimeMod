@@ -4,6 +4,7 @@ import com.faketime.FakeTimeFormatter;
 import com.faketime.FakeTimeManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
@@ -18,6 +19,18 @@ public class FakeTimeScreen extends Screen {
 
     public FakeTimeScreen() {
         super(Component.literal("FakeTime"));
+    }
+
+    /**
+     * PauseScreenMixin 入口按钮的打开回调。
+     *
+     * 必须是本类的静态方法而非注入处 lambda 直接 new：Mixin 会把注入代码内的
+     * lambda 搬迁进目标类（Screen），若搬迁后的 lambda 直接引用本类（Screen 子类），
+     * 在 Forge 模块化类加载器下会因 Screen 类身份分裂导致 VerifyError。经由本静态
+     * 方法中转后，搬迁进 Screen 的 lambda 只引用普通 mod 类（不涉继承层级），可正常验证。
+     */
+    public static void open(Button button) {
+        Minecraft.getInstance().setScreen(new FakeTimeScreen());
     }
 
     @Override

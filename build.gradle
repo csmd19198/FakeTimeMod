@@ -58,4 +58,30 @@ processResources {
     filesMatching('META-INF/mods.toml') {
         expand project.properties
     }
+    // Dev runs (Forge 52 modular loader): FML's ClasspathLocator builds the mod file from
+    // the classpath entry that contains META-INF/mods.toml. With separate output dirs
+    // (build/resources/main vs build/classes/java/main) it would pick the resources dir,
+    // which has no classes -> "constructed 0 mods". Keep mods.toml out of the loose
+    // resources output; the expanded copy is placed into the classes output instead
+    // (copyModsTomlToClasses), so the dev mod file carries both classes and mods.toml.
+    exclude 'META-INF/mods.toml'
+}
+
+tasks.register('copyModsTomlToClasses') {
+    dependsOn 'processResources'
+    def outDir = layout.buildDirectory.dir('classes/java/main/META-INF')
+    outputs.dir(outDir)
+    doLast {
+        copy {
+            from 'src/main/resources/META-INF/mods.toml'
+            into outDir
+            expand project.properties
+        }
+    }
+}
+
+// The dev runs must see the classes dir as the mod file, so ensure mods.toml is there first.
+// The packaged jar also needs mods.toml, which now lives in the classes output (not resources).
+tasks.matching { it.name in ['prepareRunClient', 'prepareRunServer', 'jar'] }.configureEach {
+    dependsOn 'copyModsTomlToClasses'
 }

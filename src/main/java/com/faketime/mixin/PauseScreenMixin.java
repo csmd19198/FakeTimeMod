@@ -1,7 +1,6 @@
 package com.faketime.mixin;
 
 import com.faketime.client.gui.FakeTimeScreen;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -39,7 +38,7 @@ public abstract class PauseScreenMixin {
 
         Screen screen = (Screen) (Object) this;
         Button entryButton = Button.builder(Component.translatable("gui.faketimemod.open"),
-                b -> Minecraft.getInstance().setScreen(new FakeTimeScreen()))
+                FakeTimeScreen::open)
                 .bounds(screen.width - 80, 5, 75, 20).build();
 
         screen.renderables.add(entryButton);
