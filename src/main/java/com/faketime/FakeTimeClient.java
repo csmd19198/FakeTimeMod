@@ -1,11 +1,11 @@
 package com.faketime;
 
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 
-@Mod.EventBusSubscriber(modid = FakeTimeMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = FakeTimeMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class FakeTimeClient {
     private FakeTimeClient() {}
 
@@ -13,9 +13,9 @@ public final class FakeTimeClient {
     private static long lastSavedTicks = Long.MIN_VALUE;
     private static long lastSavedBase = Long.MIN_VALUE;
 
+    // NeoForge 21.1 无 phase 字段，改用 ClientTickEvent.Post（等价于原 END 阶段）
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    public static void onClientTick(ClientTickEvent.Post event) {
         FakeTimeManager manager = FakeTimeManager.getInstance();
         Minecraft mc = Minecraft.getInstance();
         if (mc.level != null) {
