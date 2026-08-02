@@ -1,0 +1,16 @@
+CL  net/minecraft/world/level/Level net/minecraft/world/level/Level
+CL  net/minecraft/client/multiplayer/ClientLevel net/minecraft/client/multiplayer/ClientLevel
+CL  net/minecraft/client/gui/screens/Screen net/minecraft/client/gui/screens/Screen
+CL  net/minecraft/client/gui/screens/PauseScreen net/minecraft/client/gui/screens/PauseScreen
+CL  net/minecraft/client/renderer/FogRenderer net/minecraft/client/renderer/FogRenderer
+CL  net/minecraft/client/renderer/LevelRenderer net/minecraft/client/renderer/LevelRenderer
+CL  net/minecraft/client/renderer/item/ItemProperties net/minecraft/client/renderer/item/ItemProperties
+MD  net/minecraft/world/level/Level/getDayTime ()J net/minecraft/world/level/Level/getDayTime ()J
+MD  net/minecraft/world/level/Level/getSunAngle (F)F net/minecraft/world/level/Level/getSunAngle (F)F
+MD  net/minecraft/client/multiplayer/ClientLevel/getSkyDarken (F)F net/minecraft/client/multiplayer/ClientLevel/getSkyDarken (F)F
+MD  net/minecraft/client/multiplayer/ClientLevel/getTimeOfDay (F)F net/minecraft/client/multiplayer/ClientLevel/getTimeOfDay (F)F
+MD  net/minecraft/client/multiplayer/ClientLevel/getMoonPhase ()I net/minecraft/client/multiplayer/ClientLevel/getMoonPhase ()I
+MD  net/minecraft/client/multiplayer/ClientLevel/getStarBrightness (F)F net/minecraft/client/multiplayer/ClientLevel/getStarBrightness (F)F
+FD  net/minecraft/client/gui/screens/Screen/children net/minecraft/client/gui/screens/Screen/children
+FD  net/minecraft/client/gui/screens/Screen/narratables net/minecraft/client/gui/screens/Screen/narratables
+MD  net/minecraft/client/gui/screens/Screen/init (Lnet/minecraft/client/Minecraft;II)V net/minecraft/client/gui/screens/Screen/init (Lnet/minecraft/client/Minecraft;II)V

@@ -42,6 +42,15 @@ dependencies {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    // NeoForge 21.1 无 SRG 层（dev/生产同为官方名），而 mixin AP (MCP env) 校验
+    // @Inject/@Redirect/@Shadow 目标必须要有映射文件，否则报 "Unable to locate obfuscation
+    // mapping"。gradle/faketimemod-identity.srg 提供恒等映射（official→official）：
+    // 校验通过且 refmap 内容恒等无害（运行时本来就不做重映射）。
+    // 新增 mixin 目标时需在 gradle/faketimemod-identity.srg 补充对应 CL/MD/FD 条目。
+    options.compilerArgs += [
+            '-AreobfSrgFile=' + file('gradle/faketimemod-identity.srg'),
+            '-AoutRefMapFile=' + layout.buildDirectory.file('tmp/compileJava/faketimemod.refmap.json').get().asFile
+    ]
 }
 
 test { useJUnitPlatform() }
