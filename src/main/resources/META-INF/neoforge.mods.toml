@@ -22,3 +22,9 @@ mandatory=true
 versionRange="${minecraft_version_range}"
 ordering="NONE"
 side="CLIENT"
+
+# NeoForge 21.1 (FML 4): mixin configs are registered via [[mixins]] in neoforge.mods.toml
+# (ModFileParser.getMixinConfigs). ModDevGradle dev runs do NOT add --mixin.config launch args
+# (ForgeGradle did), so without this the 6 mixins would silently not be applied in dev.
+[[mixins]]
+config = "faketimemod.mixins.json"

@@ -56,16 +56,14 @@ tasks.withType(JavaCompile).configureEach {
 test { useJUnitPlatform() }
 
 processResources {
-    // Dev runs (NeoForge 21.1 modular loader): FML's ClasspathLocator builds the mod file from the
-    // classpath entry that contains META-INF/neoforge.mods.toml, and the mod's resource pack (lang
-    // etc.) is loaded from that same entry. So neoforge.mods.toml + assets + pack.mcmeta must live
-    // in the classes output (see copyResourcesToClasses) to make build/classes/java/main a
-    // self-contained mod file. Keep them out of the loose resources output to avoid
-    // duplicate entries in the packaged jar. faketimemod.mixins.json stays in resources
-    // (loaded from the classpath via the --mixin.config launch arg).
-    exclude 'META-INF/neoforge.mods.toml'
-    exclude 'assets/**'
-    exclude 'pack.mcmeta'
+    // NeoForge 21.1 dev (ModDevGradle): the mod's folders (build/classes/java/main +
+    // build/resources/main) are passed to FML via -Dfml.modFolders, and FML's
+    // UserdevLocator/ModFile build one mod file spanning both paths, reading
+    // META-INF/neoforge.mods.toml and the resource pack from them. So the normal
+    // processResources output (toml + assets + pack.mcmeta in build/resources/main)
+    // is already a self-contained mod file for dev runs and for the packaged jar —
+    // no fold-into-classes copyResourcesToClasses workspace needed (removed with
+    // the Forge 52 dev-resource folding).
     var replaceProperties = [
             minecraft_version: project.property('minecraft_version'),
             minecraft_version_range: project.property('minecraft_version_range'),
@@ -83,40 +81,4 @@ processResources {
     filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
         expand replaceProperties
     }
-}
-
-tasks.register('copyResourcesToClasses') {
-    dependsOn 'processResources', 'compileJava'
-    inputs.files 'src/main/resources'
-    inputs.property 'version', project.version
-    def outDir = layout.buildDirectory.dir('classes/java/main')
-    outputs.dir(outDir)
-    doLast {
-        copy {
-            from 'src/main/resources'
-            into outDir
-            exclude 'faketimemod.mixins.json'
-            // 只对 neoforge.mods.toml 做变量展开，其余资源（lang、二进制纹理等）原样复制
-            filesMatching('META-INF/neoforge.mods.toml') {
-                expand project.properties
-            }
-        }
-        // Mixin 注解处理器把 refmap 生成到 build/tmp/compileJava，需一并放进运行时类路径，
-        // 否则 dev 环境每次启动报 "Reference map ... could not be read" 警告。
-        def refmap = layout.buildDirectory.file('tmp/compileJava/faketimemod.refmap.json')
-        if (refmap.get().asFile.exists()) {
-            copy {
-                from refmap
-                into outDir
-            }
-        }
-    }
-}
-
-// The dev runs must see the classes dir as the mod file, so ensure resources are there first.
-// The packaged jar also needs them, now living in the classes output (not the loose resources).
-// compileTestJava 也消费 build/classes/java/main（测试类路径含主输出），需显式声明依赖，
-// 否则 Gradle 校验报隐式依赖问题。
-tasks.matching { it.name in ['prepareRunClient', 'prepareRunServer', 'runClient', 'runServer', 'jar', 'compileTestJava'] }.configureEach {
-    dependsOn 'copyResourcesToClasses'
 }
