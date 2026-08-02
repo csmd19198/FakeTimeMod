@@ -54,34 +54,50 @@ tasks.withType(JavaCompile).configureEach {
 test { useJUnitPlatform() }
 
 processResources {
-    inputs.property 'version', project.version
-    filesMatching('META-INF/mods.toml') {
-        expand project.properties
-    }
-    // Dev runs (Forge 52 modular loader): FML's ClasspathLocator builds the mod file from
-    // the classpath entry that contains META-INF/mods.toml. With separate output dirs
-    // (build/resources/main vs build/classes/java/main) it would pick the resources dir,
-    // which has no classes -> "constructed 0 mods". Keep mods.toml out of the loose
-    // resources output; the expanded copy is placed into the classes output instead
-    // (copyModsTomlToClasses), so the dev mod file carries both classes and mods.toml.
+    // Dev runs (Forge 52 modular loader): FML's ClasspathLocator builds the mod file from the
+    // classpath entry that contains META-INF/mods.toml, and the mod's resource pack (lang etc.)
+    // is loaded from that same entry. So mods.toml + assets + pack.mcmeta must live in the
+    // classes output (see copyResourcesToClasses) to make build/classes/java/main a
+    // self-contained mod file. Keep them out of the loose resources output to avoid
+    // duplicate entries in the packaged jar. faketimemod.mixins.json stays in resources
+    // (loaded from the classpath via the --mixin.config launch arg).
     exclude 'META-INF/mods.toml'
+    exclude 'assets/**'
+    exclude 'pack.mcmeta'
 }
 
-tasks.register('copyModsTomlToClasses') {
-    dependsOn 'processResources'
-    def outDir = layout.buildDirectory.dir('classes/java/main/META-INF')
+tasks.register('copyResourcesToClasses') {
+    dependsOn 'processResources', 'compileJava'
+    inputs.files 'src/main/resources'
+    inputs.property 'version', project.version
+    def outDir = layout.buildDirectory.dir('classes/java/main')
     outputs.dir(outDir)
     doLast {
         copy {
-            from 'src/main/resources/META-INF/mods.toml'
+            from 'src/main/resources'
             into outDir
-            expand project.properties
+            exclude 'faketimemod.mixins.json'
+            // 只对 mods.toml 做变量展开，其余资源（lang、二进制纹理等）原样复制
+            filesMatching('META-INF/mods.toml') {
+                expand project.properties
+            }
+        }
+        // Mixin 注解处理器把 refmap 生成到 build/tmp/compileJava，需一并放进运行时类路径，
+        // 否则 dev 环境每次启动报 "Reference map ... could not be read" 警告。
+        def refmap = layout.buildDirectory.file('tmp/compileJava/faketimemod.refmap.json')
+        if (refmap.get().asFile.exists()) {
+            copy {
+                from refmap
+                into outDir
+            }
         }
     }
 }
 
-// The dev runs must see the classes dir as the mod file, so ensure mods.toml is there first.
-// The packaged jar also needs mods.toml, which now lives in the classes output (not resources).
-tasks.matching { it.name in ['prepareRunClient', 'prepareRunServer', 'jar'] }.configureEach {
-    dependsOn 'copyModsTomlToClasses'
+// The dev runs must see the classes dir as the mod file, so ensure resources are there first.
+// The packaged jar also needs them, now living in the classes output (not the loose resources).
+// compileTestJava 也消费 build/classes/java/main（测试类路径含主输出），需显式声明依赖，
+// 否则 Gradle 校验报隐式依赖问题。
+tasks.matching { it.name in ['prepareRunClient', 'prepareRunServer', 'jar', 'compileTestJava'] }.configureEach {
+    dependsOn 'copyResourcesToClasses'
 }
