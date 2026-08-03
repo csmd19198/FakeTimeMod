@@ -8,6 +8,10 @@ version="${mod_version}"
 displayName="${mod_name}"
 authors="${mod_authors}"
 description='''${mod_description}'''
+logoFile="logo.png"
+updateJSONURL="https://github.com/csmd19198/FakeTimeMod/releases/latest/download/update.json"
+displayURL="https://github.com/csmd19198/FakeTimeMod"
+issueTrackerURL="https://github.com/csmd19198/FakeTimeMod/issues"
 
 [[dependencies.${mod_id}]]
 modId="neoforge"
