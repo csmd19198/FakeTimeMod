@@ -12,7 +12,7 @@ A client-side fake time mod — adds a time slider to the ESC pause menu so you 
 ## Installation
 
 1. Install Minecraft **1.21.1** and **NeoForge 21.1.x** (note: incompatible with the Forge build — pick the jar that matches your loader).
-2. Place `faketimemod-1.0.0-1.21.1-neoforge.jar` in the `mods` folder of your game directory.
+2. Place `faketimemod-1.1.0-1.21.1-neoforge.jar` in the `mods` folder of your game directory.
 3. Launch the game.
 
 This is a **client-only** mod — no server-side installation needed.
@@ -76,7 +76,7 @@ cd FakeTimeMod
 ./gradlew build
 ```
 
-The build artifact is at `build/libs/faketimemod-1.0.0-1.21.1-neoforge.jar`.
+The build artifact is at `build/libs/faketimemod-1.1.0-1.21.1-neoforge.jar`.
 
 Run the dev environment client:
 
