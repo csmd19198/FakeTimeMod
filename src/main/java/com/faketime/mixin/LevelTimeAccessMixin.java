@@ -15,11 +15,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *  ShadowRenderer 直接调用 ClientLevel.getTimeOfDay(F) 方法本体（而非 renderSky 等
  *  具体调用点），因此太阳贴图位置正确（走 renderSky 的调用点重定向）但光影的
  *  sunPosition/shadowAngle 等 uniform 仍按真实时间计算，阳光方向"停在原地"。
- *  本注入在 dayTime() 默认方法本体返回假时间，getTimeOfDay/getMoonBrightness/
- *  moonPhase 等所有经 dayTime() 的渲染时间源自动生效（ClientLevel/ServerLevel
- *  均未 override dayTime()）。只对客户端 Level 生效，服务端逻辑不受影响。 */
+ *  本注入在 dayTime() 默认方法上返回假时间，getTimeOfDay/getMoonBrightness/
+ *  moonPhase 等所有经 dayTime() 的渲染时间源自动生效。只对客户端 Level 生效，
+ *  服务端逻辑不受影响。 */
+// Interface mixin 模式：mixin 类必须 implements 目标接口（否则 Mixin 选择
+// SubType.Standard 并在运行时因目标为接口而抛 "target type mismatch"）。
+// 抽象方法由 Mixin 自动桥接，无需实现。
 @Mixin(LevelAccessor.class)
-public abstract class LevelTimeAccessMixin {
+public abstract class LevelTimeAccessMixin implements LevelAccessor {
 
     @Inject(method = "dayTime", at = @At("HEAD"), cancellable = true)
     private void faketime_dayTime(CallbackInfoReturnable<Long> cir) {
