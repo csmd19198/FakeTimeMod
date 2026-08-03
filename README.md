@@ -11,8 +11,15 @@ A client-side fake-time mod — provides a time slider on the ESC pause screen, 
 
 ## Installation
 
-1. Install Minecraft **1.20.1** and **Forge 47.x** (47.3.0 recommended).
-2. Place `faketimemod-1.0.0.jar` into the `mods` folder in the game directory.
+Two builds are provided for two loaders:
+
+| MC version | Loader | Artifact |
+|---|---|---|
+| 1.20.1 | Forge 47.x | `faketimemod-1.0.0-1.20.1.jar` |
+| 1.21.1 | NeoForge 21.1 | `faketimemod-1.0.0-1.21.1-neoforge.jar` |
+
+1. Install the matching Minecraft + loader version.
+2. Place the artifact into the `mods` folder in the game directory.
 3. Launch the game.
 
 This mod is **client-side only** — no server-side installation is required.
@@ -76,7 +83,7 @@ cd FakeTimeMod
 ./gradlew build
 ```
 
-The build artifact is located at `build/libs/faketimemod-1.0.0.jar`.
+The build artifact is located at `build/libs/faketimemod-1.0.0-1.20.1.jar` (Forge 1.20.1) or `build/libs/faketimemod-1.0.0-1.21.1-neoforge.jar` (NeoForge 1.21.1, built on the `neoforge-1.21.1` branch).
 
 Run the dev-environment client:
 
