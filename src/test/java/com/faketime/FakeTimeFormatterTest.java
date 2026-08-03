@@ -25,4 +25,21 @@ class FakeTimeFormatterTest {
         assertEquals("1000 刻", FakeTimeFormatter.formatTicks(1000L));
         assertEquals("23999 刻", FakeTimeFormatter.formatTicks(23999L));
     }
+
+    /** 复刻 vanilla DimensionType.getTimeOfDay 平滑曲线（非线性）的关键锚点。
+     *  线性 skyTicks/24000 只在 6:00(6000刻) 与 18:00(18000刻) 相等，其余时刻偏差最大 ~840 刻
+     *  （黎明/黄昏）——正是太阳位置与 vanilla 不一致的根因。这些值取自 1.21.1 的 Mth.frac 公式。 */
+    @Test
+    void vanillaTimeOfDaySmoothedCurve() {
+        // 6:00(0刻)：d0=frac(-0.25)=0.75, d1=0.5-cos(0.75π)/2=0.8536, (2*0.75+0.8536)/3=0.7845
+        assertEquals(0.7845F, FakeTimeManager.getTimeOfDay(0L), 0.001F);
+        // 正午(6000刻)：0.0
+        assertEquals(0.0F, FakeTimeManager.getTimeOfDay(6000L), 0.001F);
+        // 18:00(12000刻)：d0=frac(0.25)=0.25, d1=0.5-cos(0.25π)/2=0.1464, (0.5+0.1464)/3=0.2155
+        assertEquals(0.2155F, FakeTimeManager.getTimeOfDay(12000L), 0.001F);
+        // 午夜(18000刻)：0.5
+        assertEquals(0.5F, FakeTimeManager.getTimeOfDay(18000L), 0.001F);
+        // 逐日取模后同值
+        assertEquals(FakeTimeManager.getTimeOfDay(12000L), FakeTimeManager.getTimeOfDay(24000L + 12000L), 0.0001F);
+    }
 }
