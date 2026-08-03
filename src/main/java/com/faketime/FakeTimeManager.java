@@ -31,6 +31,18 @@ public class FakeTimeManager {
         return Math.floorMod(dayTicks - 6000L, DAY_LENGTH);
     }
 
+    /** 复刻 vanilla DimensionType.getTimeOfDay 的平滑曲线（非线性）。
+     *  vanilla: d0 = frac(dayTime/24000 - 0.25); d1 = 0.5 - cos(d0*PI)/2; return (2*d0+d1)/3。
+     *  仅用线性 skyTicks/24000 近似会与 vanilla 在黎明/黄昏相差最多 ~840 刻（约 35 分钟），
+     *  导致同刻下太阳位置与 vanilla 不一致（模组端太阳更低、升起更晚）——这正是"0 刻渲染
+     *  与实际 0 刻不同"的根因。所有 getTimeOfDay/getSunAngle 重定向都必须用本方法。 */
+    public static float getTimeOfDay(long dayTicks) {
+        double d0 = (double) dayTicks / (double) DAY_LENGTH - 0.25D;
+        d0 = d0 - Math.floor(d0); // Mth.frac
+        double d1 = 0.5D - Math.cos(d0 * Math.PI) / 2.0D;
+        return (float) ((d0 * 2.0D + d1) / 3.0D);
+    }
+
     /** 测试用：注入可控时钟。 */
     public void setClock(LongSupplier clock) {
         this.clock = clock;
