@@ -14,3 +14,5 @@ MD  net/minecraft/client/multiplayer/ClientLevel/getStarBrightness (F)F net/mine
 FD  net/minecraft/client/gui/screens/Screen/children net/minecraft/client/gui/screens/Screen/children
 FD  net/minecraft/client/gui/screens/Screen/narratables net/minecraft/client/gui/screens/Screen/narratables
 MD  net/minecraft/client/gui/screens/Screen/init (Lnet/minecraft/client/Minecraft;II)V net/minecraft/client/gui/screens/Screen/init (Lnet/minecraft/client/Minecraft;II)V
+CL  net/minecraft/world/level/LevelAccessor net/minecraft/world/level/LevelAccessor
+MD  net/minecraft/world/level/LevelAccessor/dayTime ()J net/minecraft/world/level/LevelAccessor/dayTime ()J

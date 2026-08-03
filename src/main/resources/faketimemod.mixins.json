@@ -9,7 +9,8 @@
     "LevelRendererMixin",
     "FogRendererMixin",
     "ItemPropertiesMixin",
-    "PauseScreenMixin"
+    "PauseScreenMixin",
+    "LevelTimeAccessMixin"
   ],
   "injectors": {
     "defaultRequire": 1
