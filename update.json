@@ -1,15 +1,15 @@
 {
   "homepage": "https://github.com/csmd19198/FakeTimeMod",
   "promos": {
-    "1.20.1-latest": "1.0.0-1.20.1",
-    "1.20.1-recommended": "1.0.0-1.20.1",
-    "1.21.1-latest": "1.0.0-1.21.1-neoforge",
-    "1.21.1-recommended": "1.0.0-1.21.1-neoforge"
+    "1.20.1-latest": "1.1.0-1.20.1",
+    "1.20.1-recommended": "1.1.0-1.20.1",
+    "1.21.1-latest": "1.1.0-1.21.1-neoforge",
+    "1.21.1-recommended": "1.1.0-1.21.1-neoforge"
   },
   "1.20.1": {
-    "1.0.0-1.20.1": "First release: fake world time slider on the pause screen (Forge 1.20.1)"
+    "1.1.0-1.20.1": "Stable release: sun/lighting match vanilla exactly; Iris/Oculus shader compatibility (sunlight follows fake time)"
   },
   "1.21.1": {
-    "1.0.0-1.21.1-neoforge": "First release: fake world time slider on the pause screen (NeoForge 1.21.1)"
+    "1.1.0-1.21.1-neoforge": "Stable release: sun/lighting match vanilla exactly; Iris shader compatibility (sunlight follows fake time)"
   }
 }
