@@ -15,8 +15,8 @@ Two builds are provided for two loaders:
 
 | MC version | Loader | Artifact |
 |---|---|---|
-| 1.20.1 | Forge 47.x | `faketimemod-1.1.0-1.20.1.jar` |
-| 1.21.1 | NeoForge 21.1 | `faketimemod-1.1.0-1.21.1-neoforge.jar` |
+| 1.20.1 | Forge 47.x | `faketimemod-1.1.1-1.20.1.jar` |
+| 1.21.1 | NeoForge 21.1 | `faketimemod-1.1.1-1.21.1-neoforge.jar` |
 
 1. Install the matching Minecraft + loader version.
 2. Place the artifact into the `mods` folder in the game directory.
@@ -83,7 +83,7 @@ cd FakeTimeMod
 ./gradlew build
 ```
 
-The build artifact is located at `build/libs/faketimemod-1.1.0-1.20.1.jar` (Forge 1.20.1) or `build/libs/faketimemod-1.1.0-1.21.1-neoforge.jar` (NeoForge 1.21.1, built on the `neoforge-1.21.1` branch).
+The build artifact is located at `build/libs/faketimemod-1.1.1-1.20.1.jar` (Forge 1.20.1) or `build/libs/faketimemod-1.1.1-1.21.1-neoforge.jar` (NeoForge 1.21.1, built on the `neoforge-1.21.1` branch).
 
 Run the dev-environment client:
 
