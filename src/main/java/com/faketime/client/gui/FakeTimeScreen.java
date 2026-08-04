@@ -119,13 +119,14 @@ public class FakeTimeScreen extends Screen {
         g.fill(cx - 1, cy - 1, cx + 2, cy + 2, CLOCK_COLOR); // 中心点
     }
 
-    /** 绘制面板背景纹理：整图等比缩小到面板尺寸（1:1 采样，无拉伸/平铺）。
-     *  纹理 440×280 → 面板 220×140（2:1 缩小），用 9 参数 blit(tex, x, y, u, v,
-     *  width, height, texW, texH)——从纹理(u,v)取 width×height 画到屏幕(x,y)
-     *  同尺寸，采样 1:1 绝对安全，不会花屏。资源包可覆盖同名纹理。 */
+    /** 绘制面板背景纹理：整图等比缩小到面板尺寸。
+     *  用 11 参数 blit(tex, x, width, y, height, u, v, uW, vH, texW, texH)——屏幕
+     *  区域 (x,y) 尺寸 width×height，从纹理 (u,v) 取 uW×vH，两者解耦实现真正缩放：
+     *  屏幕 220×140 取纹理全部 440×280（2:1 缩小）。9 参数版取图尺寸恒等于屏幕
+     *  尺寸（只取纹理左上角，丢失右下边框），不可用。资源包可覆盖同名纹理。 */
     private static void drawPanelTexture(GuiGraphics g, ResourceLocation tex,
                                          int x, int y, int width, int height,
                                          int texW, int texH) {
-        g.blit(tex, x, y, 0, 0, width, height, texW, texH);
+        g.blit(tex, x, width, y, height, 0.0F, 0.0F, texW, texH, texW, texH);
     }
 }
