@@ -66,6 +66,34 @@ Minecraft 一天 = 24000 游戏刻（ticks），1000 刻 = 1 游戏小时（游�
 - **Oculus 光影的 moonBrightness / moonPhase**：光影包通常通过 `Level#getDayTime()` 之外的方式获取月相（如 `Level#getMoonPhase()`），本模组不注入这些路径，因此光影中的月光亮度（moonBrightness）和月相（moonPhase）**仍按服务器真实时间计算**。
 - **LOCKED 模式下的月相**：当时间被锁定时，`getFakeFullDayTime()` 返回固定的时刻值，导致月相始终为该固定时刻对应的月相。若要月相也跟随假时间变化，请使用 INDEPENDENT 模式而非 LOCKED 模式。
 
+## 自定义面板纹理（资源包）
+
+FakeTimeMod 的 GUI 面板背景是**可用资源包替换的纹理**。
+
+**默认纹理位置**（模组 jar 内）：
+`assets/faketimemod/textures/gui/panel.png`
+
+**要求**：
+- 尺寸：**440×280**（2:1 —— 面板实际渲染为 220×140）
+- 格式：PNG，支持透明
+
+### 如何制作资源包
+
+1. 新建一个文件夹，在里面添加 `pack.mcmeta`：
+   ```json
+   {
+     "pack": {
+       "description": "我的 FakeTimeMod 面板",
+       "pack_format": 15
+     }
+   }
+   ```
+2. 把你的图片放到资源包文件夹内这个路径：
+   `assets/faketimemod/textures/gui/panel.png`
+3. 把资源包文件夹（或其 ZIP）放入 `.minecraft/resourcepacks/`，在游戏内 *选项 → 资源包* 中启用。
+
+你的纹理将替换默认面板背景。请保持 2:1 比例，并留出中央空白区域——时间文字、模拟钟表、滑杆和按钮会绘制在它上方。
+
 ## 构建
 
 前置条件：JDK 17、Gradle（使用项目自带的 Gradle Wrapper）。

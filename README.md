@@ -73,6 +73,34 @@ The following behaviors are design choices of this mod and are expected:
 - **Oculus shaders' moonBrightness / moonPhase**: Shader packs usually fetch the moon phase through means other than `Level#getDayTime()` (e.g., `Level#getMoonPhase()`). This mod does not inject those paths, so the moon brightness (moonBrightness) and moon phase (moonPhase) in shaders are **still computed from the server's real time**.
 - **Moon phase in LOCKED mode**: When time is locked, `getFakeFullDayTime()` returns a fixed tick value, so the moon phase is always the phase corresponding to that fixed moment. If you want the moon phase to also follow the fake time, use INDEPENDENT mode rather than LOCKED mode.
 
+## Customizing the Panel Texture (Resource Packs)
+
+The FakeTimeMod GUI panel background is a **texture that can be replaced by a resource pack**.
+
+**Default texture location** (inside the mod jar):
+`assets/faketimemod/textures/gui/panel.png`
+
+**Requirements**:
+- Size: **440×280** (2:1 — the panel renders at 220×140)
+- Format: PNG with transparency support
+
+### How to make a resource pack
+
+1. Create a folder, then inside it add a `pack.mcmeta`:
+   ```json
+   {
+     "pack": {
+       "description": "My FakeTimeMod panel",
+       "pack_format": 15
+     }
+   }
+   ```
+2. Place your image at this path inside the pack folder:
+   `assets/faketimemod/textures/gui/panel.png`
+3. Put the pack folder (or a ZIP of it) into `.minecraft/resourcepacks/` and enable it in-game (*Options → Resource Packs*).
+
+Your texture replaces the default panel background. Keep the 2:1 ratio and leave the center area clear — the time text, analog clock, slider, and buttons are drawn on top of it.
+
 ## Building
 
 Prerequisites: JDK 17, Gradle (use the project's bundled Gradle Wrapper).
