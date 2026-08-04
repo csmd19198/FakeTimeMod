@@ -8,12 +8,20 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class FakeTimeScreen extends Screen {
     private static final FakeTimeManager MANAGER = FakeTimeManager.getInstance();
     private static final int CLOCK_COLOR = 0xFFFFFFFF;
     private static final int TICK_RADIUS = 13;   // 12 个刻度点的圆周半径
     private static final int HAND_LENGTH = 11;   // 时针长度
+
+    /** 面板背景纹理（九宫格，可被资源包覆盖：assets/faketimemod/textures/gui/panel.png）。 */
+    private static final ResourceLocation PANEL_TEXTURE =
+            new ResourceLocation("faketimemod", "textures/gui/panel.png");
+    private static final int PANEL_TEX_W = 440;   // 纹理宽（2× 面板尺寸）
+    private static final int PANEL_TEX_H = 280;   // 纹理高
+    private static final int PANEL_BORDER = 6;    // 九宫格边框宽度（深色描边+高光）
 
     public FakeTimeScreen() {
         super(Component.literal("FakeTime"));
@@ -45,8 +53,9 @@ public class FakeTimeScreen extends Screen {
         int x = cx - panelW / 2;
         int y = cy - panelH / 2;
 
-        g.fill(x, y, x + panelW, y + panelH, 0xC0202020);
-        g.fill(x + 1, y + 1, x + panelW - 1, y + panelH - 1, 0xC0282828);
+        drawNineSliced(g, PANEL_TEXTURE, x, y, panelW, panelH,
+                PANEL_BORDER, PANEL_BORDER, PANEL_BORDER, PANEL_BORDER,
+                PANEL_TEX_W, PANEL_TEX_H);
 
         long fake = MANAGER.getDisplayTicks();
         long real = MANAGER.getRealDayTimeApprox(); // 外推近似：界面打开时也随现实时间流动
@@ -84,5 +93,47 @@ public class FakeTimeScreen extends Screen {
         pose.popPose();
 
         g.fill(cx - 1, cy - 1, cx + 2, cy + 2, CLOCK_COLOR); // 中心点
+    }
+
+    /** 九宫格绘制面板纹理：四角固定尺寸，四边+中心拉伸/平铺。
+     *  与 vanilla blitNineSliced 同算法，但用 11 参数 blit（带纹理尺寸）适配
+     *  任意纹理大小——vanilla blitNineSliced 内部硬编码 256×256 的 UV，
+     *  对 440×280 纹理不适用。 */
+    private static void drawNineSliced(GuiGraphics g, ResourceLocation tex,
+                                       int x, int y, int width, int height,
+                                       int left, int top, int right, int bottom,
+                                       int texW, int texH) {
+        int rightEdge = x + width - right;
+        int bottomEdge = y + height - bottom;
+        int uRight = texW - right;
+        int vBottom = texH - bottom;
+
+        // 四角（不缩放）
+        g.blit(tex, x, y, left, top, left, top, left, top, texW, texH);
+        g.blit(tex, rightEdge, y, right, top, right, top, right, top, texW, texH);
+        g.blit(tex, x, bottomEdge, left, bottom, left, vBottom, left, bottom, texW, texH);
+        g.blit(tex, rightEdge, bottomEdge, right, bottom, uRight, vBottom, right, bottom, texW, texH);
+
+        // 上/下边（水平拉伸）
+        if (rightEdge - x - left > 0) {
+            g.blit(tex, x + left, y, rightEdge - x - left, top, left, top,
+                    texW - left - right, top, texW, texH);
+            g.blit(tex, x + left, bottomEdge, rightEdge - x - left, bottom, left, vBottom,
+                    texW - left - right, bottom, texW, texH);
+        }
+
+        // 左/右边（垂直拉伸）
+        if (bottomEdge - y - top > 0) {
+            g.blit(tex, x, y + top, left, bottomEdge - y - top, left, top,
+                    left, texH - top - bottom, texW, texH);
+            g.blit(tex, rightEdge, y + top, right, bottomEdge - y - top, uRight, top,
+                    right, texH - top - bottom, texW, texH);
+        }
+
+        // 中心（双向拉伸）
+        if (rightEdge - x - left > 0 && bottomEdge - y - top > 0) {
+            g.blit(tex, x + left, y + top, rightEdge - x - left, bottomEdge - y - top,
+                    left, top, texW - left - right, texH - top - bottom, texW, texH);
+        }
     }
 }
