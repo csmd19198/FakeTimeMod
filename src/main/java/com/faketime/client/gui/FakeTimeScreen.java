@@ -11,12 +11,20 @@ import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class FakeTimeScreen extends Screen {
     private static final FakeTimeManager MANAGER = FakeTimeManager.getInstance();
     private static final int CLOCK_COLOR = 0xFFFFFFFF;
     private static final int TICK_RADIUS = 13;   // 12 个刻度点的圆周半径
     private static final int HAND_LENGTH = 11;   // 时针长度
+
+    /** 面板背景纹理（九宫格，可被资源包覆盖：assets/faketimemod/textures/gui/panel.png）。 */
+    private static final ResourceLocation PANEL_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath("faketimemod", "textures/gui/panel.png");
+    private static final int PANEL_TEX_W = 440;   // 纹理宽（2× 面板尺寸）
+    private static final int PANEL_TEX_H = 280;   // 纹理高
+    private static final int PANEL_BORDER = 6;    // 九宫格边框宽度（深色描边+高光）
 
     public FakeTimeScreen() {
         super(Component.literal("FakeTime"));
@@ -65,10 +73,9 @@ public class FakeTimeScreen extends Screen {
         int x = cx - panelW / 2;
         int y = cy - panelH / 2;
 
-        // 1.21 的 renderBackground 会对半透明背景做模糊；面板若半透明，虚化背景会透出，
-        // 使钟表/文字所在的非按钮区域显得模糊。改为不透明背景。
-        g.fill(x, y, x + panelW, y + panelH, 0xFF202020);
-        g.fill(x + 1, y + 1, x + panelW - 1, y + panelH - 1, 0xFF282828);
+        drawNineSliced(g, PANEL_TEXTURE, x, y, panelW, panelH,
+                PANEL_BORDER, PANEL_BORDER, PANEL_BORDER, PANEL_BORDER,
+                PANEL_TEX_W, PANEL_TEX_H);
 
         long fake = MANAGER.getDisplayTicks();
         long real = MANAGER.getRealDayTimeApprox(); // 外推近似：界面打开时也随现实时间流动
@@ -112,5 +119,43 @@ public class FakeTimeScreen extends Screen {
         pose.popPose();
 
         g.fill(cx - 1, cy - 1, cx + 2, cy + 2, CLOCK_COLOR); // 中心点
+    }
+
+    /** 九宫格绘制面板纹理：四角固定尺寸，四边+中心拉伸/平铺。
+     *  用 9 参数 blit(tex, x, y, u, v, width, height, texW, texH)——u/v 为纹理像素
+     *  坐标、width/height 为屏幕尺寸、texW/texH 为纹理实际尺寸，天然支持任意纹理。
+     *  vanilla blitNineSliced 内部硬编码 256×256 UV，对 440×280 纹理不适用。 */
+    private static void drawNineSliced(GuiGraphics g, ResourceLocation tex,
+                                       int x, int y, int width, int height,
+                                       int left, int top, int right, int bottom,
+                                       int texW, int texH) {
+        int rightEdge = x + width - right;
+        int bottomEdge = y + height - bottom;
+        int uRight = texW - right;
+        int vBottom = texH - bottom;
+
+        // 四角（不缩放）
+        g.blit(tex, x, y, 0, 0, left, top, texW, texH);
+        g.blit(tex, rightEdge, y, uRight, 0, right, top, texW, texH);
+        g.blit(tex, x, bottomEdge, 0, vBottom, left, bottom, texW, texH);
+        g.blit(tex, rightEdge, bottomEdge, uRight, vBottom, right, bottom, texW, texH);
+
+        // 上/下边（水平拉伸）
+        if (rightEdge - x - left > 0) {
+            g.blit(tex, x + left, y, left, 0, rightEdge - x - left, top, texW, texH);
+            g.blit(tex, x + left, bottomEdge, left, vBottom, rightEdge - x - left, bottom, texW, texH);
+        }
+
+        // 左/右边（垂直拉伸）
+        if (bottomEdge - y - top > 0) {
+            g.blit(tex, x, y + top, 0, top, left, bottomEdge - y - top, texW, texH);
+            g.blit(tex, rightEdge, y + top, uRight, top, right, bottomEdge - y - top, texW, texH);
+        }
+
+        // 中心（双向拉伸）
+        if (rightEdge - x - left > 0 && bottomEdge - y - top > 0) {
+            g.blit(tex, x + left, y + top, left, top,
+                    rightEdge - x - left, bottomEdge - y - top, texW, texH);
+        }
     }
 }
