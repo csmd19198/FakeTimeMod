@@ -16,12 +16,11 @@ public class FakeTimeScreen extends Screen {
     private static final int TICK_RADIUS = 13;   // 12 个刻度点的圆周半径
     private static final int HAND_LENGTH = 11;   // 时针长度
 
-    /** 面板背景纹理（九宫格，可被资源包覆盖：assets/faketimemod/textures/gui/panel.png）。 */
+    /** 面板背景纹理（可被资源包覆盖：assets/faketimemod/textures/gui/panel.png）。 */
     private static final ResourceLocation PANEL_TEXTURE =
             new ResourceLocation("faketimemod", "textures/gui/panel.png");
     private static final int PANEL_TEX_W = 440;   // 纹理宽（2× 面板尺寸）
     private static final int PANEL_TEX_H = 280;   // 纹理高
-    private static final int PANEL_BORDER = 6;    // 九宫格边框宽度（深色描边+高光）
 
     public FakeTimeScreen() {
         super(Component.literal("FakeTime"));
@@ -53,8 +52,7 @@ public class FakeTimeScreen extends Screen {
         int x = cx - panelW / 2;
         int y = cy - panelH / 2;
 
-        drawNineSliced(g, PANEL_TEXTURE, x, y, panelW, panelH,
-                PANEL_BORDER, PANEL_BORDER, PANEL_BORDER, PANEL_BORDER,
+        drawPanelTexture(g, PANEL_TEXTURE, x, y, panelW, panelH,
                 PANEL_TEX_W, PANEL_TEX_H);
 
         long fake = MANAGER.getDisplayTicks();
@@ -95,45 +93,13 @@ public class FakeTimeScreen extends Screen {
         g.fill(cx - 1, cy - 1, cx + 2, cy + 2, CLOCK_COLOR); // 中心点
     }
 
-    /** 九宫格绘制面板纹理：四角固定尺寸，四边+中心重复填充。
-     *  四角用 9 参数 blit(tex, x, y, u, v, width, height, texW, texH)（不缩放），
-     *  四边/中心用 10 参数 blitRepeating（平铺重复，与 vanilla blitNineSliced 同法）。
-     *  vanilla blitNineSliced 内部硬编码 256×256 UV，对 440×280 纹理不适用，
-     *  故手动实现并传真实纹理尺寸。 */
-    private static void drawNineSliced(GuiGraphics g, ResourceLocation tex,
-                                       int x, int y, int width, int height,
-                                       int left, int top, int right, int bottom,
-                                       int texW, int texH) {
-        int rightEdge = x + width - right;
-        int bottomEdge = y + height - bottom;
-        int uRight = texW - right;
-        int vBottom = texH - bottom;
-        int midW = texW - left - right;   // 纹理中部块宽
-        int midH = texH - top - bottom;   // 纹理中部块高
-        int screenMidW = rightEdge - x - left;  // 屏幕中部区域宽
-        int screenMidH = bottomEdge - y - top;  // 屏幕中部区域高
-
-        // 四角（不缩放）
-        g.blit(tex, x, y, 0, 0, left, top, texW, texH);
-        g.blit(tex, rightEdge, y, uRight, 0, right, top, texW, texH);
-        g.blit(tex, x, bottomEdge, 0, vBottom, left, bottom, texW, texH);
-        g.blit(tex, rightEdge, bottomEdge, uRight, vBottom, right, bottom, texW, texH);
-
-        // 上/下边（水平平铺）
-        if (screenMidW > 0) {
-            g.blitRepeating(tex, x + left, y, screenMidW, top, left, 0, midW, top, texW, texH);
-            g.blitRepeating(tex, x + left, bottomEdge, screenMidW, bottom, left, vBottom, midW, bottom, texW, texH);
-        }
-
-        // 左/右边（垂直平铺）
-        if (screenMidH > 0) {
-            g.blitRepeating(tex, x, y + top, left, screenMidH, 0, top, left, midH, texW, texH);
-            g.blitRepeating(tex, rightEdge, y + top, right, screenMidH, uRight, top, right, midH, texW, texH);
-        }
-
-        // 中心（双向平铺）
-        if (screenMidW > 0 && screenMidH > 0) {
-            g.blitRepeating(tex, x + left, y + top, screenMidW, screenMidH, left, top, midW, midH, texW, texH);
-        }
+    /** 绘制面板背景纹理：整图等比缩小到面板尺寸（1:1 采样，无拉伸/平铺）。
+     *  纹理 440×280 → 面板 220×140（2:1 缩小），用 9 参数 blit(tex, x, y, u, v,
+     *  width, height, texW, texH)——从纹理(u,v)取 width×height 画到屏幕(x,y)
+     *  同尺寸，采样 1:1 绝对安全，不会花屏。资源包可覆盖同名纹理。 */
+    private static void drawPanelTexture(GuiGraphics g, ResourceLocation tex,
+                                         int x, int y, int width, int height,
+                                         int texW, int texH) {
+        g.blit(tex, x, y, 0, 0, width, height, texW, texH);
     }
 }
