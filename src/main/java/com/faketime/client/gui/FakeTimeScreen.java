@@ -121,9 +121,9 @@ public class FakeTimeScreen extends Screen {
         g.fill(cx - 1, cy - 1, cx + 2, cy + 2, CLOCK_COLOR); // 中心点
     }
 
-    /** 九宫格绘制面板纹理：四角固定尺寸，四边+中心拉伸/平铺。
-     *  用 9 参数 blit(tex, x, y, u, v, width, height, texW, texH)——u/v 为纹理像素
-     *  坐标、width/height 为屏幕尺寸、texW/texH 为纹理实际尺寸，天然支持任意纹理。
+    /** 九宫格绘制面板纹理：四角固定尺寸，四边+中心拉伸填充。
+     *  用 11 参数底层 blit(tex, x1, x2, y1, y2, u, v, uW, vW, texW, texH)——屏幕区
+     *  域与纹理取图尺寸解耦（屏幕宽 = x2-x1，取图宽 = uW），可对边/中心做拉伸。
      *  vanilla blitNineSliced 内部硬编码 256×256 UV，对 440×280 纹理不适用。 */
     private static void drawNineSliced(GuiGraphics g, ResourceLocation tex,
                                        int x, int y, int width, int height,
@@ -133,29 +133,30 @@ public class FakeTimeScreen extends Screen {
         int bottomEdge = y + height - bottom;
         int uRight = texW - right;
         int vBottom = texH - bottom;
+        int midW = texW - left - right;   // 纹理中部块宽
+        int midH = texH - top - bottom;   // 纹理中部块高
 
-        // 四角（不缩放）
-        g.blit(tex, x, y, 0, 0, left, top, texW, texH);
-        g.blit(tex, rightEdge, y, uRight, 0, right, top, texW, texH);
-        g.blit(tex, x, bottomEdge, 0, vBottom, left, bottom, texW, texH);
-        g.blit(tex, rightEdge, bottomEdge, uRight, vBottom, right, bottom, texW, texH);
+        // 四角（不缩放：屏幕尺寸 == 取图尺寸）
+        g.blit(tex, x, x + left, y, y + top, 0, 0, left, top, texW, texH);
+        g.blit(tex, rightEdge, x + width, y, y + top, uRight, 0, right, top, texW, texH);
+        g.blit(tex, x, x + left, bottomEdge, y + height, 0, vBottom, left, bottom, texW, texH);
+        g.blit(tex, rightEdge, x + width, bottomEdge, y + height, uRight, vBottom, right, bottom, texW, texH);
 
-        // 上/下边（水平拉伸）
-        if (rightEdge - x - left > 0) {
-            g.blit(tex, x + left, y, left, 0, rightEdge - x - left, top, texW, texH);
-            g.blit(tex, x + left, bottomEdge, left, vBottom, rightEdge - x - left, bottom, texW, texH);
+        // 上/下边（水平拉伸：屏幕宽 > 取图宽 midW）
+        if (width - left - right > 0) {
+            g.blit(tex, x + left, rightEdge, y, y + top, left, 0, midW, top, texW, texH);
+            g.blit(tex, x + left, rightEdge, bottomEdge, y + height, left, vBottom, midW, bottom, texW, texH);
         }
 
-        // 左/右边（垂直拉伸）
-        if (bottomEdge - y - top > 0) {
-            g.blit(tex, x, y + top, 0, top, left, bottomEdge - y - top, texW, texH);
-            g.blit(tex, rightEdge, y + top, uRight, top, right, bottomEdge - y - top, texW, texH);
+        // 左/右边（垂直拉伸：屏幕高 > 取图高 midH）
+        if (height - top - bottom > 0) {
+            g.blit(tex, x, x + left, y + top, bottomEdge, 0, top, left, midH, texW, texH);
+            g.blit(tex, rightEdge, x + width, y + top, bottomEdge, uRight, top, right, midH, texW, texH);
         }
 
         // 中心（双向拉伸）
-        if (rightEdge - x - left > 0 && bottomEdge - y - top > 0) {
-            g.blit(tex, x + left, y + top, left, top,
-                    rightEdge - x - left, bottomEdge - y - top, texW, texH);
+        if (width - left - right > 0 && height - top - bottom > 0) {
+            g.blit(tex, x + left, rightEdge, y + top, bottomEdge, left, top, midW, midH, texW, texH);
         }
     }
 }
