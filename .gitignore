@@ -1,0 +1,6 @@
+# build / runtime artifacts
+build/
+bin/
+run/
+.gradle/
+release_*/
