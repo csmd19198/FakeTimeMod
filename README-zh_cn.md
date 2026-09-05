@@ -12,7 +12,7 @@
 ## 安装
 
 1. 安装 Minecraft **1.21.1** 和 **NeoForge 21.1.x**（注：与 Forge 版互不兼容，请按加载器选用对应 jar）。
-2. 将 `faketimemod-1.0.0-1.21.1-neoforge.jar` 放入游戏目录的 `mods` 文件夹。
+2. 将 `faketimemod-1.1.2-1.21.1-neoforge.jar` 放入游戏目录的 `mods` 文件夹。
 3. 启动游戏。
 
 本模组为**纯客户端**模组，无需在服务端安装。
@@ -76,7 +76,7 @@ cd FakeTimeMod
 ./gradlew build
 ```
 
-构建产物位于 `build/libs/faketimemod-1.0.0-1.21.1-neoforge.jar`。
+构建产物位于 `build/libs/faketimemod-1.1.2-1.21.1-neoforge.jar`。
 
 运行开发环境客户端：
 
