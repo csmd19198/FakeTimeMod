@@ -11,8 +11,15 @@
 
 ## 安装
 
-1. 安装 Minecraft **1.20.1** 和 **Forge 47.x**（推荐 47.3.0）。
-2. 将 `faketimemod-1.0.0.jar` 放入游戏目录的 `mods` 文件夹。
+提供两个加载器的构建：
+
+| MC 版本 | 加载器 | 产物 |
+|---|---|---|
+| 1.20.1 | Forge 47.x | `faketimemod-1.1.2-1.20.1.jar` |
+| 1.21.1 | NeoForge 21.1 | `faketimemod-1.1.2-1.21.1-neoforge.jar` |
+
+1. 安装对应的 Minecraft + 加载器版本。
+2. 将对应产物放入游戏目录的 `mods` 文件夹。
 3. 启动游戏。
 
 本模组为**纯客户端**模组，无需在服务端安装。
@@ -104,7 +111,7 @@ cd FakeTimeMod
 ./gradlew build
 ```
 
-构建产物位于 `build/libs/faketimemod-1.0.0.jar`。
+构建产物位于 `build/libs/faketimemod-1.1.2-1.20.1.jar`（Forge 1.20.1），或 `build/libs/faketimemod-1.1.2-1.21.1-neoforge.jar`（NeoForge 1.21.1，在 `neoforge-1.21.1` 分支构建）。
 
 运行开发环境客户端：
 
