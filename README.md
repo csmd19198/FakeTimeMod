@@ -1,5 +1,7 @@
 # FakeTimeMod
 
+English | [中文](README-zh_cn.md)
+
 A client-side fake-time mod — provides a time slider on the ESC pause screen, allowing local adjustment of the world-time display without affecting server logic.
 
 ## Purpose
