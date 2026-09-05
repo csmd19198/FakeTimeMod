@@ -4,5 +4,6 @@
   "gui.faketimemod.open": "时间",
   "gui.faketimemod.close": "完成",
   "gui.faketimemod.current_time": "当前: %s",
-  "gui.faketimemod.server_time": "服务器真实时间: %s"
+  "gui.faketimemod.server_time": "服务器真实时间: %s",
+  "gui.faketimemod.ticks": "%s 刻"
 }

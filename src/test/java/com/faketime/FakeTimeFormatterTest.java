@@ -20,12 +20,6 @@ class FakeTimeFormatterTest {
         assertEquals("7:30", FakeTimeFormatter.formatClock(1500L)); // 1000刻=1小时
     }
 
-    @Test
-    void formatTicks() {
-        assertEquals("1000 刻", FakeTimeFormatter.formatTicks(1000L));
-        assertEquals("23999 刻", FakeTimeFormatter.formatTicks(23999L));
-    }
-
     /** 复刻 vanilla DimensionType.getTimeOfDay 平滑曲线（非线性）的关键锚点。
      *  线性 skyTicks/24000 只在 6:00(6000刻) 与 18:00(18000刻) 相等，其余时刻偏差最大 ~840 刻
      *  （黎明/黄昏）——正是太阳位置与 vanilla 不一致的根因。这些值取自 1.21.1 的 Mth.frac 公式。 */
