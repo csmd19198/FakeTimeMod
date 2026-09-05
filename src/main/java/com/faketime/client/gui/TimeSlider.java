@@ -29,7 +29,7 @@ public class TimeSlider extends AbstractSliderButton {
     @Override
     protected void updateMessage() {
         long ticks = this.manager.getDisplayTicks();
-        this.setMessage(Component.literal(FakeTimeFormatter.formatTicks(ticks)));
+        this.setMessage(FakeTimeFormatter.formatTicks(ticks));
     }
 
     @Override

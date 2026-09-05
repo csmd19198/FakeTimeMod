@@ -61,10 +61,12 @@ public class FakeTimeScreen extends Screen {
         this.drawAnalogClock(g, x + 26, y + 26, fake);
 
         g.drawString(this.font, Component.translatable("gui.faketimemod.current_time",
-                FakeTimeFormatter.formatTicks(fake) + "  (" + FakeTimeFormatter.formatClock(fake) + ")"),
+                FakeTimeFormatter.formatTicks(fake).append("  (").append(
+                        Component.literal(FakeTimeFormatter.formatClock(fake))).append(")")),
                 x + 50, y + 12, 0xFFFFFF);
         g.drawString(this.font, Component.translatable("gui.faketimemod.server_time",
-                FakeTimeFormatter.formatTicks(real) + "  (" + FakeTimeFormatter.formatClock(real) + ")"),
+                FakeTimeFormatter.formatTicks(real).append("  (").append(
+                        Component.literal(FakeTimeFormatter.formatClock(real))).append(")")),
                 x + 50, y + 24, 0x808080);
 
         super.render(g, mouseX, mouseY, partialTick);

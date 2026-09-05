@@ -1,5 +1,6 @@
 package com.faketime;
 
+import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,8 +23,11 @@ class FakeTimeFormatterTest {
 
     @Test
     void formatTicks() {
-        assertEquals("1000 刻", FakeTimeFormatter.formatTicks(1000L));
-        assertEquals("23999 刻", FakeTimeFormatter.formatTicks(23999L));
+        // 现在返回本地化 Component，按 key+参数 比较（纯逻辑，不依赖语言加载）
+        assertEquals(Component.translatable("gui.faketimemod.ticks", 1000L),
+                FakeTimeFormatter.formatTicks(1000L));
+        assertEquals(Component.translatable("gui.faketimemod.ticks", 23999L),
+                FakeTimeFormatter.formatTicks(23999L));
     }
 
     /** 复刻 vanilla DimensionType.getTimeOfDay 平滑曲线（非线性）的关键锚点。
